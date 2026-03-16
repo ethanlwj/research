@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DualPath Paper Summary Report</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --ink: #13243a;
+      --sub: #465f7e;
+      --line: #d9e3f0;
+      --accent: #0b63ce;
+      --accent-soft: #eaf2ff;
+      --good: #0f6a2b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1100px 500px at 100% -10%, #dbe9ff 0%, transparent 60%),
+        var(--bg);
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1050px;
+      margin: 28px auto 64px;
+      padding: 0 18px;
+    }
+    .hero {
+      background: linear-gradient(140deg, #102745, #1f4d86);
+      color: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 28px rgba(14, 29, 54, 0.24);
+    }
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 1.85rem;
+      line-height: 1.25;
+    }
+    .hero p { margin: 6px 0; color: #dce9ff; }
+    .links a { color: #ffffff; }
+    .section { margin-top: 18px; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 15px;
+    }
+    h2 {
+      margin: 24px 0 10px;
+      font-size: 1.22rem;
+      color: #0f2b4f;
+    }
+    .grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+    ul { margin: 6px 0; padding-left: 20px; }
+    li { margin: 6px 0; }
+    .kpi {
+      display: inline-block;
+      background: #edf8f1;
+      border: 1px solid #c7e8d2;
+      color: var(--good);
+      border-radius: 999px;
+      padding: 4px 10px;
+      margin: 0 8px 8px 0;
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+    .figure {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    .figure img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid #e5edf8;
+      background: #fff;
+    }
+    .figure figcaption {
+      font-size: 0.92rem;
+      color: var(--sub);
+      margin-top: 8px;
+    }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+      padding: 10px 12px;
+      border-radius: 8px;
+    }
+    footer {
+      margin-top: 24px;
+      color: var(--sub);
+      font-size: 0.9rem;
+    }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="hero">
+      <h1>DualPath: Breaking the Storage Bandwidth Bottleneck in Agentic LLM Inference</h1>
+      <p>Easy-to-read technical summary with key ideas, challenges, results, and practical lessons.</p>
+      <p class="links">
+        <strong>Source:</strong>
+        <a href="https://arxiv.org/abs/2602.21548" target="_blank" rel="noopener noreferrer">arXiv:2602.21548</a>
+        ·
+        <a href="https://arxiv.org/html/2602.21548v2" target="_blank" rel="noopener noreferrer">HTML version</a>
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>1) Abstract (Plain-English)</h2>
+      <div class="card">
+        <p>
+          The paper studies a systems bottleneck in agentic LLM serving: repeated KV-cache movement from remote storage can dominate end-to-end performance.
+          DualPath introduces a dual-path loading and scheduling design that uses both prefill and decode sides more effectively, so storage I/O is no longer concentrated on prefill engines only.
+          The reported result is a substantial gain in throughput and latency under realistic multi-turn agent workloads.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>2) Introduction: Why This Problem Exists</h2>
+      <div class="card">
+        <ul>
+          <li>Agentic workloads are multi-turn and tool-driven, often with many short appends over long contexts.</li>
+          <li>This creates high KV-cache reuse, so loading KV-cache efficiently becomes more important than raw compute speed.</li>
+          <li>In existing prefill-decode disaggregated systems, prefill-side storage bandwidth becomes the limiting resource while decode-side bandwidth is often underused.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>3) Main Contributions</h2>
+      <div class="grid">
+        <article class="card">
+          <strong>Storage bottleneck reframing</strong>
+          <p>Shows storage-network pressure is the primary bottleneck in agentic settings, not just GPU compute.</p>
+        </article>
+        <article class="card">
+          <strong>Dual-path loading design</strong>
+          <p>Adds a second data path so KV-cache movement can use spare bandwidth on decode-side resources.</p>
+        </article>
+        <article class="card">
+          <strong>NIC-centric traffic isolation</strong>
+          <p>Separates KV-cache traffic from latency-sensitive model communications to reduce interference.</p>
+        </article>
+        <article class="card">
+          <strong>Dynamic scheduling</strong>
+          <p>Balances both NIC traffic and GPU utilization across engines for stable high throughput.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>4) Key Challenges</h2>
+      <div class="card">
+        <ul>
+          <li>How to exploit spare decode-side I/O without harming core inference communications (AllToAll, AllGather/ReduceScatter).</li>
+          <li>How to avoid introducing new congestion on compute links and PCIe paths in the dual data path.</li>
+          <li>How to maintain load balance simultaneously across storage NICs and GPUs at scale.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>5) Problems Solved</h2>
+      <div class="card">
+        <ul>
+          <li>Breaks prefill-side storage bottleneck by aggregating usable bandwidth across prefill and decode paths.</li>
+          <li>Reduces idle capacity on decode-side storage resources.</li>
+          <li>Improves system-level efficiency for long-context, multi-agent workloads where cache movement dominates.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>6) Results (As Reported in the Paper)</h2>
+      <div class="card">
+        <span class="kpi">Up to 1.73× throughput</span>
+        <span class="kpi">Up to 1.61× lower median latency</span>
+        <span class="kpi">Up to 90.9% less storage bandwidth usage</span>
+        <span class="kpi">~77.3% speculative token acceptance rate</span>
+        <p>
+          Evaluation includes offline and online settings, and scales up to large GPU counts. The paper positions these gains as evidence that storage-aware serving architecture is a first-class optimization target for agentic inference.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>7) Key Figures (Remote arXiv HTML Assets)</h2>
+
+      <figure class="figure">
+        <img src="https://arxiv.org/html/2602.21548v2/x1.png" alt="Figure 1. Existing bottleneck (left) and DualPath (right)." loading="lazy" />
+        <figcaption><strong>Figure 1.</strong> Existing bottleneck (left) and DualPath (right).</figcaption>
+      </figure>
+
+      <figure class="figure">
+        <img src="https://arxiv.org/html/2602.21548v2/x3.png" alt="Figure 3. Hardware trends and throughput with varying batch size." loading="lazy" />
+        <figcaption><strong>Figure 3.</strong> Left: hardware trends of NVIDIA GPUs. Right: relative token throughput with varying request batch size.</figcaption>
+      </figure>
+
+      <figure class="figure">
+        <img src="https://arxiv.org/html/2602.21548v2/x4.png" alt="Figure 4a. PE Read Path." loading="lazy" />
+        <figcaption><strong>Figure 4(a).</strong> PE Read Path in the dual-path loading design.</figcaption>
+      </figure>
+
+      <figure class="figure">
+        <img src="https://arxiv.org/html/2602.21548v2/x5.png" alt="Figure 4b. DE Read Path." loading="lazy" />
+        <figcaption><strong>Figure 4(b).</strong> DE Read Path in the dual-path loading design.</figcaption>
+      </figure>
+
+      <figure class="figure">
+        <img src="https://arxiv.org/html/2602.21548v2/x6.png" alt="Figure 5. Inter-Engine PE Scheduling." loading="lazy" />
+        <figcaption><strong>Figure 5.</strong> Illustration of inter-engine PE scheduling.</figcaption>
+      </figure>
+    </section>
+
+    <section class="section">
+      <h2>8) Summary</h2>
+      <div class="card">
+        <p>
+          DualPath is a systems-level solution for agentic LLM serving where KV-cache I/O, not compute, dominates. Its core value is practical: it turns underused decode-side storage capacity into useful throughput, while scheduling and traffic isolation keep inference stable.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>9) Actionable Lessons</h2>
+      <div class="card">
+        <ul>
+          <li>Measure storage-network saturation and KV-cache transfer cost before only scaling GPUs.</li>
+          <li>Treat prefill and decode as a joint bandwidth-management problem, not independent queues.</li>
+          <li>Isolate cache traffic from latency-critical collective ops using explicit NIC/traffic policy.</li>
+          <li>Use agent-trace benchmarks (long context + many turns) to evaluate serving architecture decisions.</li>
+        </ul>
+        <div class="callout">
+          If your serving stack shows high cache hit rate and prefill-side network saturation, DualPath-style data-path and scheduling changes likely deliver higher ROI than pure compute-side tuning.
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Report generated from the arXiv paper and its HTML assets. Last updated: 2026-03-03.
+    </footer>
+  </main>
+</body>
+</html>

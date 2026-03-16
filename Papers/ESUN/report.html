@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ESUN's latest changes and insights</title>
+  <style>
+    :root {
+      --bg: #f4efe6;
+      --paper: #fffdf8;
+      --ink: #1f2933;
+      --muted: #52606d;
+      --accent: #0f766e;
+      --accent-soft: #d7f0ec;
+      --line: #d9d2c3;
+      --warn: #9a3412;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top right, rgba(15, 118, 110, 0.10), transparent 28%),
+        linear-gradient(180deg, #f8f4ed 0%, #f1ebdf 100%);
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.65;
+    }
+
+    .page {
+      max-width: 1040px;
+      margin: 40px auto;
+      padding: 40px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      box-shadow: 0 24px 60px rgba(31, 41, 51, 0.08);
+    }
+
+    h1, h2, h3 {
+      line-height: 1.2;
+      margin: 0 0 14px;
+      color: #102a43;
+    }
+
+    h1 {
+      font-size: 2.6rem;
+      letter-spacing: -0.03em;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      margin-top: 36px;
+      padding-top: 18px;
+      font-size: 1.5rem;
+      border-top: 1px solid var(--line);
+    }
+
+    h3 {
+      margin-top: 22px;
+      font-size: 1.08rem;
+    }
+
+    p, li {
+      font-size: 1rem;
+      margin: 0 0 14px;
+    }
+
+    ul {
+      margin: 0 0 16px 20px;
+      padding: 0;
+    }
+
+    .deck {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+      margin: 24px 0 14px;
+    }
+
+    .hero, .panel, .callout {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 18px 20px;
+    }
+
+    .hero {
+      background: linear-gradient(145deg, rgba(15, 118, 110, 0.08), rgba(255, 255, 255, 0.95));
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 5px 10px;
+      background: var(--accent-soft);
+      color: #134e4a;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin: 18px 0;
+    }
+
+    .callout strong,
+    .panel strong {
+      color: #102a43;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0 14px;
+      font-size: 0.96rem;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 12px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f7f1e7;
+    }
+
+    .small {
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .warn {
+      color: var(--warn);
+      font-weight: 700;
+    }
+
+    a {
+      color: #0b6b61;
+    }
+
+    code {
+      padding: 0 4px;
+      background: #f5f7fa;
+      border-radius: 4px;
+      font-family: "SFMono-Regular", Menlo, monospace;
+      font-size: 0.92em;
+    }
+
+    @media (max-width: 800px) {
+      .page { margin: 0; padding: 22px; }
+      .deck, .grid-2 { grid-template-columns: 1fr; }
+      h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <span class="eyebrow">Technical Report</span>
+    <h1>ESUN's latest changes and insights</h1>
+    <p class="meta">
+      Prepared on 2026-03-16. Primary source: <em>OCP ESUN - Network Operator Requirements - Base Specification Rev 1.0</em>,
+      effective February 9, 2026 and released by OCP on March 10, 2026.
+    </p>
+
+    <section class="deck">
+      <div class="hero">
+        <h3>Executive summary</h3>
+        <p>
+          ESUN, short for <strong>Ethernet for Scale-Up Networks</strong>, is an Open Compute Project workstream that adapts
+          Ethernet for tightly coupled AI accelerator domains. The Rev 1.0 base specification makes a clear architectural move:
+          shrink protocol overhead, keep Ethernet's ecosystem advantages, and reintroduce the lost control signals in a compact
+          ESUN header. The result is a scale-up fabric profile optimized for <strong>low latency</strong>, <strong>lossless delivery</strong>,
+          <strong>traffic differentiation</strong>, and <strong>resilience across hierarchical multi-hop topologies</strong>.
+        </p>
+        <p>
+          The most important technical changes are the new 4-byte ESUN header, explicit support for <code>EH-ECN</code>,
+          <code>EH-CoS</code>, <code>EH-Flow Label</code>, and <code>EH-TTL</code>, plus required switch support for
+          <code>PFC</code>, <code>CBFC</code>, and <code>LLR</code>. Taken together, these changes reposition Ethernet from a
+          general-purpose data center interconnect into a more specialized operator-friendly fabric for large GPU memory domains.
+        </p>
+      </div>
+      <aside class="panel">
+        <h3>Report scope</h3>
+        <p>This report focuses on two threads:</p>
+        <ul>
+          <li>Background and context: ESUN's inception, history, purpose, and operator/business goals.</li>
+          <li>Technical synthesis: insights and conclusions from the Rev 1.0 specification on QoS, congestion control, and low latency.</li>
+        </ul>
+        <p class="small">
+          Notes on business goals are partly inferred from OCP's stated focus areas, tenets, and requirement language, and are marked as such.
+        </p>
+      </aside>
+    </section>
+
+    <h2>1. Background and context</h2>
+    <h3>1.1 What ESUN is</h3>
+    <p>
+      ESUN is an OCP networking workstream and specification family focused on the <strong>network side</strong> of scale-up AI interconnects:
+      protocol headers, switching behavior, lossless transport behavior, error handling, and multi-hop operation. OCP distinguishes this from
+      endpoint-side transport concerns, which are handled by the separate SUE-Transport effort. In practical terms, ESUN aims to make Ethernet
+      viable for GPU scale-up domains that previously depended on more tightly specialized interconnects or custom designs.
+    </p>
+
+    <h3>1.2 Inception and short history</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Milestone</th>
+          <th>Why it matters</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>April 29, 2025</td>
+          <td>OCP and the UALink Consortium announced collaboration on scale-up interconnect performance for AI and HPC clusters.</td>
+          <td>This set the broader market context: open, high-bandwidth, low-latency scale-up fabrics had become a strategic industry priority.</td>
+        </tr>
+        <tr>
+          <td>October 13, 2025</td>
+          <td>OCP publicly announced the ESUN workstream at the OCP Global Summit 2025.</td>
+          <td>ESUN formally began as an open forum for operators and vendors to adapt Ethernet for scale-up AI networking, with 12 founding members including Meta, Microsoft, NVIDIA, Oracle, AMD, Arista, Arm, Broadcom, Cisco, HPE Networking, and Marvell.</td>
+        </tr>
+        <tr>
+          <td>February 9, 2026</td>
+          <td>The Rev 1.0 base specification became effective.</td>
+          <td>This is the first baseline operator requirements document and establishes the functional profile for compliant endpoints and switches.</td>
+        </tr>
+        <tr>
+          <td>March 10, 2026</td>
+          <td>OCP announced the release of the ESUN 1.0 specification.</td>
+          <td>The workstream moved from kickoff to a published base specification in roughly four months, signaling urgency and strong ecosystem alignment.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>1.3 Business and operator goals</h3>
+    <div class="grid-2">
+      <div class="callout">
+        <strong>Explicit goals from the sources</strong>
+        <p>
+          The specification repeatedly frames ESUN around hyperscale AI infrastructure needs: improved goodput, lower latency, higher resilience,
+          differentiated traffic handling, and better GPU utilization. OCP's supporting materials also emphasize interoperability, ecosystem
+          enablement, and standards alignment with IEEE and UEC.
+        </p>
+      </div>
+      <div class="callout">
+        <strong>Inferred business goals</strong>
+        <p>
+          The underlying business case is to reduce dependence on proprietary scale-up fabrics, shorten deployment cycles, preserve Ethernet
+          supply-chain economics, and improve return on expensive accelerator clusters by cutting network-induced idle time.
+        </p>
+      </div>
+    </div>
+    <p>
+      Rev 1.0 presents ESUN as an <strong>evolution of Ethernet</strong>, not a clean-sheet replacement. That positioning matters commercially:
+      it preserves familiarity for operators and silicon vendors, while still introducing enough structure to target scale-up GPU fabrics with more
+      deterministic performance than conventional Ethernet deployments usually provide.
+    </p>
+    <p>
+      By March 10, 2026, OCP reported that ESUN had grown to <strong>more than 175 participating companies</strong>. That is a strong signal that
+      the initiative is not merely a bilateral Meta-Microsoft document, but an ecosystem effort aimed at creating a broadly deployable market option.
+    </p>
+
+    <h3>1.4 Why ESUN appeared now</h3>
+    <p>
+      The specification says scale-up traffic is dominated by model-parallel communication, which demands both <strong>high bandwidth</strong> and
+      <strong>low latency</strong>. It also notes a transition from 8-GPU single-node systems toward next-generation domains of
+      <strong>1,000 or more GPUs</strong> spanning racks. In that setting, even modest bandwidth degradation translates into meaningful end-to-end
+      training loss and higher annual operating cost. ESUN therefore responds to a concrete operational problem: standard Ethernet capabilities are
+      helpful, but alone they do not cleanly fit the latency, goodput, and resilience envelope needed for large AI memory domains.
+    </p>
+
+    <h2>2. Latest changes introduced by ESUN Rev 1.0</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Area</th>
+          <th>Standard Ethernet baseline</th>
+          <th>ESUN Rev 1.0 change</th>
+          <th>Operational impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Header model</td>
+          <td>IPv4/IPv6 headers carry ECN, DSCP, TTL, and hashing entropy.</td>
+          <td>Removes 20-40 bytes of IP header and adds a compact 4-byte ESUN header.</td>
+          <td>Higher goodput for small messages and less protocol overhead on latency-sensitive traffic.</td>
+        </tr>
+        <tr>
+          <td>QoS</td>
+          <td>DSCP and 802.1p normally classify traffic.</td>
+          <td><code>EH-CoS</code> adds 3-bit class signaling inside the ESUN header and takes precedence when present.</td>
+          <td>Traffic class survives header reduction without relying on VLAN tagging.</td>
+        </tr>
+        <tr>
+          <td>Persistent congestion feedback</td>
+          <td>IP-based ECN</td>
+          <td><code>EH-ECN</code> recreates ECN semantics inside the ESUN header.</td>
+          <td>Congestion feedback remains available after IP removal.</td>
+        </tr>
+        <tr>
+          <td>Transient congestion control</td>
+          <td>PFC</td>
+          <td>PFC remains required and ESUN adds required switch support for <code>CBFC</code>.</td>
+          <td>Lossless behavior is preserved while enabling a more memory-efficient switch design path.</td>
+        </tr>
+        <tr>
+          <td>Resilience</td>
+          <td>No Ethernet-native link-level retry beyond FEC</td>
+          <td><code>LLR</code> is introduced for switch resiliency and optional host support.</td>
+          <td>Shortens exposure to BER-induced packet loss on high-speed links.</td>
+        </tr>
+        <tr>
+          <td>Load balancing</td>
+          <td>Entropy often comes from IP headers and sockets.</td>
+          <td><code>EH-Flow Label</code> plus the <code>F</code> validity bit provide deterministic hashing input.</td>
+          <td>Helps retain balanced multi-path forwarding after IP header removal.</td>
+        </tr>
+        <tr>
+          <td>Loop control</td>
+          <td>IP-TTL</td>
+          <td><code>EH-TTL</code> is decremented on each hop and packets are dropped at zero.</td>
+          <td>Maintains multi-hop safety in an L2-forwarded ESUN domain.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>3. Technical synthesis: QoS, congestion control, and low latency</h2>
+
+    <h3>3.1 QoS and traffic differentiation</h3>
+    <p>
+      ESUN does not use the phrase "QoS" as a formal section title, but it clearly implements a QoS model through <strong>traffic differentiation,
+      class mapping, and congestion signaling</strong>. The central mechanism is <code>EH-CoS</code>, a 3-bit class-of-service field intended to
+      recover the traffic-class semantics that would otherwise be lost when the IP header is removed. The specification explicitly says
+      <code>EH-CoS</code> should take precedence over class markings from 802.1Q or CBFC when all are present.
+    </p>
+    <p>
+      This reveals an important design choice: ESUN wants the <strong>packet itself</strong> to carry its scale-up intent in a compact and
+      unambiguous way. Rather than treating QoS as an external VLAN or IP policy overlay, Rev 1.0 moves traffic class closer to the forwarding
+      plane. That makes sense for tightly controlled GPU fabrics, where the operator values deterministic and low-overhead classification more than
+      broad Internet-style flexibility.
+    </p>
+    <div class="callout">
+      <strong>Insight</strong>
+      <p>
+        ESUN's QoS model is intentionally narrow and fabric-centric. It is not trying to become a universal policy framework. It is trying to give
+        scale-up AI networks just enough differentiation to separate critical traffic classes without reintroducing the full overhead of the IP stack.
+      </p>
+    </div>
+
+    <h3>3.2 Congestion control architecture</h3>
+    <p>
+      Rev 1.0 treats congestion as a <strong>two-timescale problem</strong>. For <strong>transient link-level congestion</strong>, it retains
+      <code>PFC</code> and adds <code>CBFC</code> as an additional mechanism recommended for memory-efficient switch implementations. For
+      <strong>persistent fabric congestion</strong>, it restores ECN semantics through <code>EH-ECN</code>. This is a notable architectural split:
+      short-term pause/credit controls manage losslessness locally, while explicit marking feeds longer control loops back to endpoints.
+    </p>
+    <p>
+      The product requirements reinforce this split. Endpoints must support PFC and ESUN header processing, including responding to ECN and
+      advertising capability. Switches must support PFC, CBFC, and LLR, be ECN-capable, use flow labels for hashing when valid, and decrement TTL.
+      In other words, ESUN assigns most of the fabric enforcement burden to the switch while still requiring endpoint participation in closed-loop
+      congestion response.
+    </p>
+    <div class="grid-2">
+      <div class="panel">
+        <strong>What is new</strong>
+        <p>
+          The main innovation is not inventing brand-new congestion theory. It is preserving the useful Ethernet mechanisms while relocating them
+          into an ESUN-specific packet and switch profile that remains efficient after IP removal.
+        </p>
+      </div>
+      <div class="panel">
+        <strong>Why it matters</strong>
+        <p>
+          Large GPU fabrics suffer when congestion either drops packets or creates long stalls. ESUN's layered approach tries to reduce both risks:
+          lossless behavior for immediate pressure, ECN-style signals for sustained overload, and load balancing to avoid hot spots.
+        </p>
+      </div>
+    </div>
+    <p>
+      <span class="warn">Analytical note:</span> Rev 1.0 assumes that lossless mechanisms such as PFC and CBFC can be deployed in a disciplined way.
+      The document does not deeply analyze tradeoffs like pause propagation or head-of-line blocking. That means successful operation will depend on
+      implementation quality, buffer design, and careful class isolation, even though those details are outside the base specification.
+    </p>
+
+    <h3>3.3 Low-latency strategy</h3>
+    <p>
+      Low latency is one of the strongest themes in the document. The specification ties latency directly to model developer productivity, GPU stall
+      avoidance, distributed training speed, and the trend toward smaller message sizes across larger domains. ESUN's latency strategy has three
+      layers.
+    </p>
+    <ul>
+      <li><strong>Protocol efficiency:</strong> removing 20-40 bytes of IP header and replacing it with a 4-byte ESUN header improves goodput and
+        lowers per-packet overhead, especially for small messages.</li>
+      <li><strong>Congestion avoidance and recovery:</strong> low latency is protected indirectly through lossless controls, ECN feedback, LLR, and
+        load balancing so packets do not queue or drop excessively in hierarchical fabrics.</li>
+      <li><strong>Forwarding determinism:</strong> static destination-address forwarding, flow-label hashing, and TTL-based loop control reduce the
+        chance that multi-hop L2 behavior becomes erratic as the domain scales.</li>
+    </ul>
+    <p>
+      The deeper insight is that ESUN sees latency as a <strong>systems property</strong>, not only a serialization-delay problem. Header shrinkage
+      helps, but the specification puts equal emphasis on avoiding stalls, hot spots, retransmission-driven delay, and unstable scaling behavior.
+      That is the right framing for AI scale-up networks, where a slightly slower packet stream can idle a much more expensive compute pipeline.
+    </p>
+
+    <h3>3.4 What the spec implies for implementation</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Implementation implication</th>
+          <th>Reasoning from the spec</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Switch ASICs become more central to ESUN success.</td>
+          <td>Switches carry mandatory support for PFC, CBFC, LLR, ECN marking, TTL updates, DA-based forwarding, and flow-label-aware hashing.</td>
+        </tr>
+        <tr>
+          <td>Control-plane discipline is required.</td>
+          <td>ESUN assumes static destination-address programming and explicitly says unknown-address ESUN packets should not be broadcast.</td>
+        </tr>
+        <tr>
+          <td>Packet mutation in flight has hardware cost.</td>
+          <td>The spec notes that updating ECN or TTL requires FCS recomputation during forwarding.</td>
+        </tr>
+        <tr>
+          <td>ESUN is strongest in managed domains, not open enterprise networks.</td>
+          <td>The design choices favor deterministic, operator-controlled AI fabrics over general-purpose interoperability across loosely managed networks.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>4. Conclusions</h2>
+    <p>
+      ESUN Rev 1.0 is best understood as a focused Ethernet profile for AI scale-up fabrics. Its latest changes do not try to replace Ethernet's
+      ecosystem; instead they compress and specialize it. The compact ESUN header restores the minimum control fields needed for class-based
+      treatment, congestion feedback, load balancing, and loop control after removing IP overhead.
+    </p>
+    <p>
+      From a technical standpoint, the most important conclusion is that <strong>QoS, congestion control, and low latency are tightly coupled in
+      ESUN</strong>. QoS without ECN and pause behavior would not keep the fabric lossless. Congestion control without compact differentiation would
+      undermine efficiency. Low latency without load balancing and resilience would collapse at larger scale. Rev 1.0 therefore packages these as a
+      single operator profile rather than isolated features.
+    </p>
+    <p>
+      From an industry standpoint, ESUN signals that open Ethernet is being pushed upward into territory traditionally associated with specialized
+      accelerator interconnects. If implementations deliver on the specification's intent, ESUN could lower the cost and complexity of building
+      large GPU memory domains while preserving openness, interoperability, and vendor diversity.
+    </p>
+
+    <h2>5. Sources</h2>
+    <ol>
+      <li>
+        OCP ESUN - Network Operator Requirements - Base Specification Rev 1.0, effective February 9, 2026.
+        Local source PDF: <code>/Users/ethanlau/Documents/Research/Specifications/OCP ESUN - Network Operator Requirements - Base Specification Rev 1.0 FINAL.pdf</code>
+      </li>
+      <li>
+        Open Compute Project, "Introducing ESUN: Advancing Ethernet for Scale-Up AI Infrastructure at OCP" (October 13, 2025):
+        <a href="https://www.opencompute.org/index.php/blog/introducing-esun-advancing-ethernet-for-scale-up-ai-infrastructure-at-ocp">official blog post</a>
+      </li>
+      <li>
+        Open Compute Project, "Networking/ESUN" workstream page:
+        <a href="https://www.opencompute.org/wiki/Networking/ESUN">official wiki page</a>
+      </li>
+      <li>
+        Open Compute Project, "The OCP ESUN 1.0 Specification has been released!" (March 10, 2026):
+        <a href="https://www.opencompute.org/blog/the-ocp-esun-10-specification-has-been-released">official announcement</a>
+      </li>
+      <li>
+        Open Compute Project and UALink Consortium collaboration announcement (April 29, 2025):
+        <a href="https://www.opencompute.org/blog/open-compute-project-foundation-and-ualinktm-consortium-announce-a-new-collaboration">official announcement</a>
+      </li>
+    </ol>
+  </main>
+</body>
+</html>

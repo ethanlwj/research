@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Research Summary - AI+HW 2035: Shaping the Next Decade</title>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --paper: #ffffff;
+      --ink: #1b2430;
+      --muted: #4c596a;
+      --line: #d9e0ea;
+      --accent: #0b5fa5;
+      --accent-soft: #e9f2fb;
+      --warn-soft: #fff4e5;
+      --warn: #8a5200;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top right, #eef6ff 0%, var(--bg) 40%, var(--bg) 100%);
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1080px;
+      margin: 28px auto;
+      padding: 0 16px 40px;
+    }
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 26px;
+      box-shadow: 0 8px 28px rgba(14, 31, 53, 0.06);
+    }
+    h1, h2, h3 { margin: 0; line-height: 1.25; }
+    h1 { font-size: 2rem; color: #14395f; margin-bottom: 8px; }
+    h2 {
+      font-size: 1.3rem;
+      color: #174f85;
+      margin-top: 24px;
+      border-top: 1px solid var(--line);
+      padding-top: 16px;
+    }
+    h3 { font-size: 1.04rem; margin-bottom: 4px; color: #12395f; }
+    p { margin: 10px 0; }
+    .meta {
+      background: var(--accent-soft);
+      border: 1px solid #c6def5;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin: 10px 0 14px;
+    }
+    .meta p { margin: 5px 0; }
+    .muted { color: var(--muted); }
+    ul { padding-left: 20px; margin: 8px 0; }
+    li { margin: 12px 0; }
+    li p { margin: 5px 0 0 0; }
+    blockquote {
+      margin: 10px 0;
+      padding: 10px 14px;
+      border-left: 4px solid var(--accent);
+      background: #f7fbff;
+      color: #1a3550;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 0.96rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px;
+      vertical-align: top;
+    }
+    th {
+      text-align: left;
+      background: #f1f6fc;
+      color: #123b63;
+    }
+    .figure-box {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      margin: 12px 0;
+      background: #fcfdff;
+    }
+    .note {
+      background: var(--warn-soft);
+      border: 1px solid #f3d7ad;
+      color: var(--warn);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-top: 14px;
+      font-size: 0.95rem;
+    }
+    code { background: #f5f7fb; border: 1px solid #e3e8f0; border-radius: 6px; padding: 1px 6px; }
+    a { color: var(--accent); }
+    .foot { margin-top: 16px; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <article class="card">
+      <h1>Research Paper Summary: <em>AI+HW 2035: Shaping the Next Decade</em></h1>
+      <p class="muted">Academic reporting brief prepared from the paper text and associated figure/table references.</p>
+
+      <section class="meta">
+        <p><strong>Paper:</strong> AI+HW 2035: Shaping the Next Decade</p>
+        <p><strong>Authors:</strong> Deming Chen et al.</p>
+        <p><strong>Version:</strong> arXiv:2603.05225v1 (March 5, 2026)</p>
+        <p><strong>Local sources used:</strong> <code>AI+HW_2035_Shaping_the_Next_Decade.pdf</code>, <code>paper_extracted.txt</code></p>
+      </section>
+
+      <h2>1. Central Argument</h2>
+      <ul>
+        <li>
+          <h3>From compute scaling to efficiency scaling</h3>
+          <p>The paper's core argument is that AI progress can no longer be sustained by brute-force growth in model size and compute alone. It proposes that future progress should be evaluated using intelligence-per-joule, with system-level outcomes (energy, latency, reliability, utilization) treated as first-class optimization targets rather than secondary constraints.</p>
+        </li>
+        <li>
+          <h3>AI-HW co-evolution as the governing paradigm</h3>
+          <p>The authors frame the next decade as a co-design problem spanning algorithms, compilers, runtimes, architecture, packaging, and infrastructure. Their claim is that isolated layer-by-layer optimization is structurally insufficient because bottlenecks now emerge at interfaces, especially memory movement, interconnect behavior, and deployment-scale orchestration.</p>
+        </li>
+      </ul>
+
+      <h2>2. Main Points and Insights (In-Depth)</h2>
+      <ul>
+        <li>
+          <h3>Memory movement, not arithmetic, is the dominant bottleneck</h3>
+          <p>The report repeatedly emphasizes that energy and latency costs are increasingly determined by data movement across memory and communication fabrics. This shifts design priorities toward locality-aware models, memory-centric architectures, and compute-in/near-memory techniques. The implication is that model quality improvements and hardware efficiency gains are now tightly contingent on reducing movement overheads rather than solely increasing FLOPs.</p>
+        </li>
+        <li>
+          <h3>Connectivity must be co-designed with compute</h3>
+          <p>The paper treats interconnect topology and protocol overhead as a limiting factor for distributed AI, particularly for long-context inference and large-scale training. It positions photonic/optoelectronic interconnects and topology-aware workload placement as strategic directions, arguing that communication architecture determines whether algorithmic scale translates into realized system throughput.</p>
+        </li>
+        <li>
+          <h3>Heterogeneous integration is presented as inevitable</h3>
+          <p>A consistent claim is that future AI stacks will combine diverse components (CPUs, GPUs, reconfigurable fabrics, domain-specific ASICs, and selective quantum components). The paper interprets heterogeneity not as optional specialization, but as the baseline architecture required to balance dense local compute, sparse global communication, and diverse deployment constraints.</p>
+        </li>
+        <li>
+          <h3>Algorithmic innovation is treated as a co-equal efficiency driver</h3>
+          <p>Rather than depicting hardware as the sole performance lever, the authors argue that shifts in model design (compression, distillation, sparsity, state-space alternatives, memory-aware attention variants) can generate gains comparable to hardware advances. This supports their multi-factor roadmap for achieving 100x-1000x efficiency improvements.</p>
+        </li>
+        <li>
+          <h3>Training and inference are separated as distinct optimization regimes</h3>
+          <p>The paper explicitly distinguishes throughput-oriented training from latency- and power-constrained inference. This distinction is important for robotics and embodied systems, where worst-case response guarantees and thermal reliability matter more than average-case throughput metrics. The analytical implication is that one benchmark suite cannot adequately represent both regimes.</p>
+        </li>
+        <li>
+          <h3>Deployment realities expose a utilization gap</h3>
+          <p>The authors state that real deployments often run at low utilization and identify this as a major systems failure mode. They call for AI-assisted compilation, kernel generation, and fleet-level scheduling to close the gap between theoretical and sustained efficiency. The deeper message is that deployment operations, not model architecture alone, determine practical competitiveness.</p>
+        </li>
+        <li>
+          <h3>Power infrastructure is a strategic constraint, not an externality</h3>
+          <p>The report places power-grid and datacenter provisioning issues at the center of AI policy and deployment feasibility. By framing power shortfalls as a near-term bottleneck, it expands AI+HW research scope beyond chip design into energy infrastructure and national competitiveness planning.</p>
+        </li>
+        <li>
+          <h3>The paper frames ecosystem coordination as a technical requirement</h3>
+          <p>Academia-industry-government alignment is not presented only as governance advice; it is presented as necessary to deliver shared benchmarks, legal pathways for distillation, access to advanced toolchains, and reproducibility. This identifies institutional fragmentation as a systems bottleneck parallel to memory or interconnect limits.</p>
+        </li>
+      </ul>
+
+      <h2>3. Key Contributions</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Contribution</th>
+            <th>Substance</th>
+            <th>Evidence in Paper</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Unified 10-year AI+HW roadmap</td>
+            <td>Provides a cross-layer program linking algorithms, hardware, systems, and policy targets.</td>
+            <td>Executive summary and Sections 3-5; Figure 1 (multi-layer co-evolution framing).</td>
+          </tr>
+          <tr>
+            <td>Quantified efficiency milestones</td>
+            <td>Defines concrete milestones (100x near-term, 1000x decade-scale) tied to intelligence-per-joule framing.</td>
+            <td>Sections 3.6/4.6/5.2; Figure 4 decomposition and forecast language.</td>
+          </tr>
+          <tr>
+            <td>Explicit challenge-to-solution mapping</td>
+            <td>Links memory wall, connectivity limits, thermal constraints, and design complexity to targeted HW/SW responses.</td>
+            <td>Table 1 and associated challenge/opportunity subsections.</td>
+          </tr>
+          <tr>
+            <td>Operational perspective on real deployments</td>
+            <td>Highlights utilization, fleet optimization, and cloud-edge split as first-order research targets.</td>
+            <td>Section 4.3 and Section 5 trends/Q&A.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>4. Gaps, Limits, and Open Questions</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Gap</th>
+            <th>Why It Matters</th>
+            <th>Implication for Future Work</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Vision-heavy, evidence-light on causal validation</td>
+            <td>The report gives strategic forecasts but limited experimental backing for aggregate 1000x claims.</td>
+            <td>Requires benchmarked ablation studies quantifying marginal gains by algorithm, hardware, and system layer.</td>
+          </tr>
+          <tr>
+            <td>Broad recommendations, limited implementation sequencing</td>
+            <td>Many proposals are plausible individually but implementation order and dependency risks are underspecified.</td>
+            <td>Need staged roadmaps with prerequisites, timelines, and failure contingencies.</td>
+          </tr>
+          <tr>
+            <td>Unclear reproducibility path for ecosystem-level metrics</td>
+            <td>Metrics like intelligence-per-joule and fleet utilization depend on shared telemetry standards that are not yet mature.</td>
+            <td>Need governance and standardization plans for reproducible reporting across institutions.</td>
+          </tr>
+          <tr>
+            <td>Geopolitical/power assumptions are directional</td>
+            <td>National power-comparison arguments are important but may vary with policy and energy market shifts.</td>
+            <td>Need regularly updated datasets and sensitivity analyses to maintain policy relevance.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>5. Figure- and Table-Anchored Insights</h2>
+      <div class="figure-box">
+        <h3>Figure 1 (Conceptual): Multi-Layer Co-Evolution</h3>
+        <p>Used to argue that materials, packaging, architecture, software stack, and application demands must be co-optimized. The figure supports the paper's structural thesis that bottlenecks are cross-layer.</p>
+      </div>
+      <div class="figure-box">
+        <h3>Figures 2-3 (Trend Projections): Model Size, Accuracy, Time</h3>
+        <p>These figures are interpreted as evidence that efficiency gains can arise from algorithmic/architectural progress, not only from larger models. The paper uses them to justify a transition from pure scaling to quality-plus-efficiency trajectories.</p>
+      </div>
+      <div class="figure-box">
+        <h3>Figure 4 (Power Context): Energy Infrastructure Constraint</h3>
+        <p>Figure 4 underpins the policy claim that infrastructure growth may lag AI demand, creating deployment bottlenecks independent of model capability.</p>
+        <svg viewBox="0 0 560 180" width="100%" role="img" aria-label="Efficiency decomposition chart">
+          <rect x="20" y="25" width="520" height="120" fill="#f7fbff" stroke="#d5e2f2"/>
+          <text x="30" y="45" font-size="13" fill="#12395f">Illustrative decomposition for 1000x pathway (from Section 5.2 discussion)</text>
+          <rect x="30" y="65" width="120" height="24" fill="#83b9ea"/>
+          <text x="35" y="82" font-size="12" fill="#06233f">~10x Algorithms</text>
+          <rect x="170" y="65" width="240" height="24" fill="#4a91cf"/>
+          <text x="175" y="82" font-size="12" fill="#ffffff">~20x Silicon + Utilization</text>
+          <rect x="430" y="65" width="90" height="24" fill="#2f6da5"/>
+          <text x="435" y="82" font-size="12" fill="#ffffff">~5x Systems</text>
+          <text x="30" y="116" font-size="12" fill="#35597e">Combined multiplicative framing is presented as a directional path to long-horizon 1000x gains.</text>
+        </svg>
+      </div>
+
+      <h2>6. Selected Direct Quotes</h2>
+      <blockquote>
+        "Looking ahead, we define what success means in 10 years: achieving a 1000x improvement in efficiency for AI training and inference..." (p.2)
+      </blockquote>
+      <blockquote>
+        "Data movement has become the primary bottleneck..." (Sec. 3.2 discussion, p.11)
+      </blockquote>
+      <blockquote>
+        "In real deployments, systems often operate at only 5-20% utilization." (Sec. 4.3, p.19)
+      </blockquote>
+      <blockquote>
+        "We predict 100x gains in 5 years (high confidence) and 1000x in 6-10 years (moderate confidence)..." (Sec. 5.2, p.25)
+      </blockquote>
+
+      <h2>7. Quantitative Targets and Confidence Signals</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Claimed Target</th>
+            <th>Context in Paper</th>
+            <th>Reported Confidence/Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1000x decade-scale efficiency improvement</td>
+            <td>Vision-level objective spanning training and inference.</td>
+            <td>Aspirational; presented as long-horizon mission-level target.</td>
+          </tr>
+          <tr>
+            <td>100x in 5 years</td>
+            <td>Intermediate milestone for AI+HW progress.</td>
+            <td>Explicitly labeled high confidence.</td>
+          </tr>
+          <tr>
+            <td>1000x in 6-10 years</td>
+            <td>Extended milestone with combined algorithm/hardware/system gains.</td>
+            <td>Explicitly labeled moderate confidence.</td>
+          </tr>
+          <tr>
+            <td>&gt;100x end-to-end energy efficiency and &ge;60% sustained utilization</td>
+            <td>Section 4.6 milestone language for scalable AI+HW systems.</td>
+            <td>Presented as measurable success criteria by the authors.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>8. Overall Assessment</h2>
+      <p>This paper makes a strong strategic contribution by integrating hardware, algorithms, infrastructure, and policy into one coherent agenda. Its main strength is scope integration with explicit milestone framing and challenge taxonomies. Its main limitation is empirical under-specification: several numeric projections are plausible but not yet validated by controlled, reproducible cross-layer studies. As a roadmap, however, it is substantive and operationally useful for research planning.</p>
+
+      <p class="note"><strong>Method note:</strong> Quotes and numeric claims were taken from the locally extracted paper text, with page/section context added for traceability.</p>
+      <p class="foot">Generated file: <code>AI_HW_2035/academic_summary_html/index.html</code></p>
+    </article>
+  </main>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "title": "ESUN's latest changes and insights",
+  "generated_on": "2026-03-16",
+  "output_format": "html",
+  "primary_source_pdf": "/Users/ethanlau/Documents/Research/Specifications/OCP ESUN - Network Operator Requirements - Base Specification Rev 1.0 FINAL.pdf",
+  "output_file": "/Users/ethanlau/Workspace/Codex/Papers/ESUN/report.html",
+  "additional_outputs": [
+    "/Users/ethanlau/Workspace/Codex/Papers/ESUN/broadcom_esun_report_en.html",
+    "/Users/ethanlau/Workspace/Codex/Papers/ESUN/broadcom_esun_report_zh.html"
+  ],
+  "source_scope": [
+    "OCP ESUN - Network Operator Requirements - Base Specification Rev 1.0",
+    "Official OCP ESUN blog and workstream pages for history and context"
+  ],
+  "focus_topics": [
+    "background and inception",
+    "history and business goals",
+    "QoS and traffic differentiation",
+    "congestion control",
+    "low latency"
+  ],
+  "official_web_sources": [
+    "https://www.opencompute.org/index.php/blog/introducing-esun-advancing-ethernet-for-scale-up-ai-infrastructure-at-ocp",
+    "https://www.opencompute.org/wiki/Networking/ESUN",
+    "https://www.opencompute.org/blog/the-ocp-esun-10-specification-has-been-released",
+    "https://www.opencompute.org/blog/open-compute-project-foundation-and-ualinktm-consortium-announce-a-new-collaboration"
+  ],
+  "notes": [
+    "Business goals are partly inferred from OCP tenets, focus areas, and the requirement language in the specification.",
+    "The report emphasizes the latest published Rev 1.0 baseline as of March 16, 2026."
+  ]
+}

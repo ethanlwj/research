@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI+HW 2035 - Easy-to-Read Report</title>
+  <style>
+    :root {
+      --bg: #f7f9fc;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #4b5563;
+      --accent: #0f766e;
+      --border: #e5e7eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    .wrap {
+      max-width: 920px;
+      margin: 36px auto;
+      padding: 0 18px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+    }
+    h1, h2 { margin: 0 0 14px 0; line-height: 1.25; }
+    h1 { font-size: 1.9rem; color: #0b4f4a; }
+    h2 {
+      font-size: 1.2rem;
+      margin-top: 26px;
+      color: #0f766e;
+      border-top: 1px solid var(--border);
+      padding-top: 18px;
+    }
+    p { margin: 10px 0; }
+    ul { margin: 8px 0 8px 22px; }
+    li { margin: 6px 0; }
+    .meta {
+      background: #f0fdfa;
+      border: 1px solid #ccfbf1;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .muted { color: var(--muted); }
+    code {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 1px 6px;
+      font-size: 0.92em;
+    }
+    a { color: #0f766e; }
+    .footer {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <article class="card">
+      <h1>Easy-to-Read Report: <em>AI+HW 2035: Shaping the Next Decade</em></h1>
+
+      <section class="meta">
+        <p><strong>Title:</strong> AI+HW 2035: Shaping the Next Decade</p>
+        <p><strong>Authors:</strong> Deming Chen et al.</p>
+        <p><strong>arXiv:</strong> 2603.05225 (v1, March 5, 2026)</p>
+        <p><strong>Source:</strong> <a href="https://arxiv.org/abs/2603.05225">https://arxiv.org/abs/2603.05225</a></p>
+      </section>
+
+      <h2>1) One-Paragraph Summary</h2>
+      <p>
+        This paper argues that AI progress over the next 10 years depends on tight co-design of AI algorithms and hardware.
+        Current AI growth is increasingly limited by energy use, memory bandwidth, interconnect bottlenecks, and deployment
+        cost, not just raw compute. The authors propose a roadmap toward a <strong>1000x efficiency improvement</strong>
+        (measured as intelligence per joule) by combining model innovation, memory-centric hardware, better system software,
+        and coordinated academia-industry-government collaboration.
+      </p>
+
+      <h2>2) Why This Paper Matters</h2>
+      <ul>
+        <li>Brute-force scaling is becoming too expensive and power-hungry.</li>
+        <li>Key bottlenecks are shifting from arithmetic to <strong>data movement, memory, and networking</strong>.</li>
+        <li>AI and hardware are often developed in silos, creating a speed mismatch.</li>
+        <li>Future success depends on end-to-end efficiency, deployability, and trustworthiness.</li>
+      </ul>
+
+      <h2>3) Main Thesis</h2>
+      <p>
+        Progress should be measured by useful intelligence per unit energy/cost/time. That requires co-evolving models,
+        compilers, runtimes, systems, and hardware together, rather than optimizing each layer independently.
+      </p>
+      <ul>
+        <li>Compute-centric design -> memory-centric and system-centric design</li>
+        <li>Single-layer optimization -> cross-layer co-design</li>
+        <li>Peak benchmark focus -> deployment metrics (latency, energy, utilization, robustness, cost)</li>
+      </ul>
+
+      <h2>4) Core Ideas by Section</h2>
+      <p><strong>Hardware technologies:</strong> Prioritize memory/data-movement efficiency, interconnect scaling, 3D integration, adaptive hardware, and AI-driven design automation.</p>
+      <p><strong>Algorithms/paradigms:</strong> Smaller domain-tuned models, better memory-locality-aware designs, distinct training vs inference targets, and self-optimizing software stacks.</p>
+      <p><strong>Applications/society:</strong> Major impact in robotics, healthcare, science, climate, and infrastructure; risks include power constraints, fragmentation, and unequal access.</p>
+
+      <h2>5) The 1000x Efficiency Claim</h2>
+      <p>The paper targets roughly <strong>100x in 5 years</strong> (high confidence) and <strong>1000x in 6-10 years</strong> (moderate confidence), based on combined gains from algorithms, silicon/utilization, and system-level optimization.</p>
+      <ul>
+        <li>~10x from model/algorithm improvements</li>
+        <li>~20x from silicon utilization and hardware advances</li>
+        <li>~5x from system-level efficiency</li>
+      </ul>
+
+      <h2>6) What Success Looks Like by 2035</h2>
+      <ul>
+        <li>Interoperable heterogeneous systems across accelerators and platforms</li>
+        <li>Much lower energy per useful output and higher sustained utilization</li>
+        <li>Reliable support for physical AI (real-time and power-constrained)</li>
+        <li>Small and large models working together in production</li>
+        <li>Faster hardware design cycles via AI-assisted EDA</li>
+        <li>Broader access through shared infrastructure and standards</li>
+      </ul>
+
+      <h2>7) Risks and Open Challenges</h2>
+      <ul>
+        <li>Thermal and reliability limits in dense 3D integration</li>
+        <li>Noise/calibration issues in analog and photonic paths</li>
+        <li>Software portability across heterogeneous hardware</li>
+        <li>Over-specialization and reduced flexibility</li>
+        <li>Fleet-level reliability and silent data corruption</li>
+        <li>Energy infrastructure and policy lag</li>
+      </ul>
+
+      <h2>8) Bottom Line</h2>
+      <p>
+        This is a strategy/vision paper rather than an experimental benchmark paper. Its main contribution is a coordinated
+        long-term roadmap for AI and hardware together. The key message: the next decade of AI progress depends on jointly
+        optimizing capability, energy, cost, reliability, and societal impact, instead of scaling compute in isolation.
+      </p>
+
+      <p class="footer">
+        Generated from the paper in this folder. Related files:
+        <code>AI+HW_2035_Shaping_the_Next_Decade.pdf</code>,
+        <code>paper_extracted.txt</code>,
+        <code>REPORT.md</code>.
+      </p>
+    </article>
+  </main>
+</body>
+</html>

@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Report: Pooling Engram Conditional Memory in Large Language Models using CXL</title>
+  <style>
+    :root {
+      --bg: #f3f0ea;
+      --paper: #fffdf8;
+      --panel: #f8f4ec;
+      --ink: #22201b;
+      --muted: #62584b;
+      --line: #ddd2c2;
+      --accent: #8e4b24;
+      --accent-soft: #f3e3d6;
+      --accent-deep: #5e2f14;
+      --shadow: rgba(63, 42, 25, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top right, #efe1d1 0%, rgba(239, 225, 209, 0) 34%),
+        linear-gradient(180deg, #f6f1e8 0%, var(--bg) 100%);
+      color: var(--ink);
+      font: 17px/1.72 Georgia, "Times New Roman", serif;
+    }
+    .wrap {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 28px 18px 60px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #7f431f 0%, #a65b2b 52%, #c57d47 100%);
+      color: #fff9f2;
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 16px 40px var(--shadow);
+    }
+    .eyebrow {
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.88;
+      margin-bottom: 10px;
+    }
+    h1, h2, h3 {
+      font-family: "Palatino Linotype", Palatino, "Book Antiqua", serif;
+      line-height: 1.25;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 2.1rem;
+    }
+    .hero p {
+      margin: 0;
+      max-width: 850px;
+      font-size: 1.02rem;
+    }
+    .meta-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0 0;
+    }
+    .meta-card {
+      background: rgba(255, 249, 242, 0.12);
+      border: 1px solid rgba(255, 244, 233, 0.22);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .meta-card .k {
+      display: block;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      opacity: 0.82;
+      margin-bottom: 5px;
+    }
+    .meta-card .v {
+      font-size: 0.96rem;
+    }
+    .section {
+      margin-top: 18px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px 24px 22px;
+      box-shadow: 0 8px 28px var(--shadow);
+    }
+    h2 {
+      margin: 0 0 14px;
+      font-size: 1.45rem;
+      color: var(--accent-deep);
+    }
+    h3 {
+      margin: 18px 0 10px;
+      font-size: 1.08rem;
+      color: var(--accent);
+    }
+    p {
+      margin: 0 0 14px;
+    }
+    .lede {
+      font-size: 1.04rem;
+      color: #312922;
+    }
+    .callout {
+      margin: 16px 0;
+      padding: 14px 16px;
+      border-left: 4px solid var(--accent);
+      background: linear-gradient(90deg, var(--accent-soft), #fbf6ef);
+      border-radius: 10px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .mini {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .mini p:last-child,
+    .section p:last-child {
+      margin-bottom: 0;
+    }
+    .label {
+      display: inline-block;
+      margin-bottom: 8px;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--accent-deep);
+      font-weight: 700;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 8px;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 11px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f1e7da;
+      color: var(--accent-deep);
+    }
+    .small {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    a {
+      color: var(--accent-deep);
+    }
+    .footer {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    @media (max-width: 820px) {
+      .meta-strip,
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .wrap {
+        padding: 16px 12px 36px;
+      }
+      h1 {
+        font-size: 1.7rem;
+      }
+      .section {
+        padding: 20px 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Paper Report</div>
+      <h1>Pooling Engram Conditional Memory in Large Language Models using CXL</h1>
+      <p>
+        This report explains what the paper is trying to solve, why the proposed use of CXL is a reasonable systems choice,
+        what the implementation actually does, and where the evidence is convincing versus still preliminary. The emphasis is
+        on exposition rather than a terse abstract rewrite.
+      </p>
+      <div class="meta-strip">
+        <div class="meta-card">
+          <span class="k">arXiv</span>
+          <span class="v"><a href="https://arxiv.org/abs/2603.10087">2603.10087v1</a></span>
+        </div>
+        <div class="meta-card">
+          <span class="k">Authors</span>
+          <span class="v">Ruiyang Ma et al.</span>
+        </div>
+        <div class="meta-card">
+          <span class="k">Main Theme</span>
+          <span class="v">CXL memory pooling for Engram retrieval</span>
+        </div>
+        <div class="meta-card">
+          <span class="k">Bottom Line</span>
+          <span class="v">Near-DRAM serving performance with cheaper shared memory</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>What Problem the Paper Is Solving</h2>
+      <p class="lede">
+        The paper starts from a simple observation: if future language models adopt <em>Engram</em>-style conditional memory,
+        then model serving inherits a new kind of systems bottleneck. The memory itself can become very large, but any given
+        token only touches a tiny amount of it. That means the dominant challenge is no longer raw storage capacity alone. It
+        is whether the system can retrieve many small fragments quickly enough that the GPU pipeline does not stall.
+      </p>
+      <p>
+        The authors frame Engram as a complement to mixture-of-experts computation. MoE helps by making computation sparse,
+        while Engram makes knowledge access sparse: instead of forcing the transformer to internalize every lexical pattern as
+        active compute, the model can hash N-grams, look up a small set of embeddings, and fuse those embeddings into selected
+        layers. This is attractive because the knowledge store can scale aggressively, but it also creates a deployment issue.
+        As the embedding tables grow into tens or hundreds of gigabytes, keeping every copy inside expensive local memory on
+        every server becomes increasingly wasteful.
+      </p>
+      <p>
+        The key thesis is that Engram is unusually well matched to remote memory pooling. It is read-only at inference time,
+        access is sparse, and the lookup can be prefetched because it depends on token IDs rather than hidden states. If those
+        assumptions hold in practice, then offloading Engram into a shared pool should reduce cost without hurting throughput.
+        The rest of the paper is an argument that CXL is a much better fit for that pool than RDMA.
+      </p>
+      <div class="callout">
+        The paper’s strongest conceptual move is to separate <strong>capacity pressure</strong> from <strong>retrieval semantics</strong>.
+        Engram needs a lot of storage, but each step only needs a very small and very fragmented slice of that storage.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Why CXL Instead of RDMA</h2>
+      <p>
+        This section is the paper’s core systems argument. Existing disaggregated memory systems for LLM serving often rely on
+        RDMA, especially for KV-cache-oriented designs. Those systems move larger blocks and typically do so at coarse request
+        boundaries. Engram is different. The lookup payload is small, the addresses are scattered, and the data must arrive
+        inside a narrow prefetch window before an early transformer layer executes. Under those conditions, fine-grained access
+        latency matters more than peak fabric bandwidth.
+      </p>
+      <p>
+        The authors argue that RDMA is structurally disadvantaged because it is message-oriented and because small transfers pay
+        protocol and software overheads that are tolerable for larger blocks but painful for discrete embedding fetches. CXL, by
+        contrast, exposes pooled memory through load/store semantics at cache-line granularity. That makes it feel much closer to
+        memory expansion than to network storage, which is exactly what this workload wants.
+      </p>
+      <div class="grid-2">
+        <div class="mini">
+          <span class="label">Engram Access Pattern</span>
+          <p>Massive total table size, but only about 5 KB retrieved per token per Engram layer in the configuration studied.</p>
+          <p>The lookups are sparse, fragmented, read-only, and predictable enough to prefetch.</p>
+        </div>
+        <div class="mini">
+          <span class="label">Fabric Implication</span>
+          <p>Bandwidth is not the main limiter. The more important requirement is whether the pool can serve those small reads
+          inside the model’s pre-layer execution window, especially for early Engram layers.</p>
+        </div>
+      </div>
+      <p>
+        The paper makes this concrete with a case study based on Qwen3-32B served by SGLang on four H200 GPUs. Using the paper’s
+        assumptions, the required average bandwidth is only about 0.7 GB/s, which is easy for both modern PCIe/CXL and a
+        datacenter network. The hard part is latency: if an Engram module sits at layer 2, the prefetch deadline is only around
+        56 microseconds. That turns the design question into a latency question, and it is the reason the paper spends so much
+        effort comparing CXL and RDMA for tiny retrievals.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>How the Proposed System Works</h2>
+      <p>
+        The system architecture is straightforward and pragmatic. Multiple compute servers connect through a commercial CXL switch
+        to a shared CXL memory card that stores the Engram table. In the prototype, the entire table lives in one contiguous
+        256 GB device. Because the table is read-only, the design avoids the hardest coherence problem in multi-host memory:
+        there is no need to keep mutable state synchronized across machines during inference.
+      </p>
+      <p>
+        On the software side, the CXL device is exposed as a DAX-mapped memory region. Once mapped into user space, the program
+        can treat it much like ordinary memory. The interesting part is not the mapping itself but the data movement strategy.
+        Engram retrieval does not look like one large contiguous copy. It looks like many tiny copies from scattered offsets.
+        To make that practical, the authors implement specialized routines for both CPU and GPU transfer paths.
+      </p>
+      <p>
+        For CXL-to-CPU movement, they use a multithreaded OpenMP loop that issues many parallel `memcpy` operations from the
+        mapped CXL region into local CPU buffers. For CXL-to-GPU movement, they register the mapped host memory with CUDA and
+        launch a custom kernel that performs many peer-to-peer reads in one wide kernel launch, rather than issuing thousands of
+        separate `cudaMemcpy` calls. The design goal is clear: keep the transfer path parallel enough that the PCIe fabric stays
+        busy even though each individual retrieval is small.
+      </p>
+      <p>
+        The integration into SGLang follows the serving lifecycle. A designated rank initializes the shared Engram storage, the
+        batch parser extracts token IDs early, and asynchronous prefetch is triggered before the model reaches the Engram layer.
+        At execution time, each rank fetches the embeddings it needs directly from the pool and combines them with its local
+        hidden states. The paper’s implementation story is therefore not just “we used CXL,” but “we used CXL in a way that
+        matches the concurrency pattern of Engram retrieval.”
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>What the Measurements Show</h2>
+      <p>
+        The experimental evidence is organized around three claims: CXL retrieval latency is close to DRAM, end-to-end serving
+        throughput remains near the DRAM baseline, and shared CXL storage becomes economically attractive as deployment scale
+        grows. The first claim is the most important because it supports the paper’s central motivation.
+      </p>
+      <h3>Latency Results</h3>
+      <p>
+        The authors measure retrieval latency for two Engram sizes, labeled Engram-27B and Engram-40B, across varying batch
+        sizes. Their reported pattern is stable: CXL-to-CPU reads are close to local DRAM, while direct CXL-to-GPU reads are
+        somewhat slower but still within a workable range. In the profiling comparison against RDMA, RDMA is dramatically worse
+        for these small scattered reads, reinforcing the earlier argument that this is not a bandwidth-bound workload.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Retrieval batch size</th>
+            <th>Local DRAM to CPU</th>
+            <th>CXL to CPU</th>
+            <th>CXL to GPU</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>about 9.6 us</td>
+            <td>about 26.8 us</td>
+            <td>about 59.1 us</td>
+          </tr>
+          <tr>
+            <td>64</td>
+            <td>about 51.0 us</td>
+            <td>about 42.5 us</td>
+            <td>about 76.4 us</td>
+          </tr>
+          <tr>
+            <td>256</td>
+            <td>about 48.9 us</td>
+            <td>about 68.0 us</td>
+            <td>about 129.1 us</td>
+          </tr>
+          <tr>
+            <td>1024</td>
+            <td>about 143.2 us</td>
+            <td>about 168.0 us</td>
+            <td>about 337.2 us</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="small">
+        Values above are the paper’s reported Engram-27B latency points. The Engram-40B trend is nearly identical, which the
+        authors use to argue that the access method remains stable as the table grows.
+      </p>
+
+      <h3>End-to-End Throughput</h3>
+      <p>
+        The serving results are intentionally modest but useful. Because open Engram weights are unavailable, the authors emulate
+        the overhead inside SGLang using Qwen3-4B and Qwen3-8B. They execute the retrieval and Engram-side computation during the
+        forward pass, but do not inject the fetched embeddings into hidden states so that the surrogate model remains stable. That
+        means these experiments measure systems overhead rather than task-quality impact.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Baseline throughput</th>
+            <th>With Engram in DRAM</th>
+            <th>With Engram in CXL</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Qwen3-4B</td>
+            <td>6183.9 tok/s</td>
+            <td>5683.7 tok/s</td>
+            <td>5614.4 tok/s</td>
+          </tr>
+          <tr>
+            <td>Qwen3-8B</td>
+            <td>4185.6 tok/s</td>
+            <td>3909.7 tok/s</td>
+            <td>3895.0 tok/s</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        These numbers support the paper’s headline claim. The gap between local DRAM and pooled CXL is small relative to the
+        total serving throughput, which suggests that the memory indirection is mostly hidden. The scale-out experiments tell the
+        same story: increasing data parallelism and using two nodes only causes a minor drop relative to the single-node CXL case.
+        This is consistent with the authors’ claim that the pooled Engram workload is light enough to share across nodes without
+        becoming a dominant bottleneck.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>Why the Cost Argument Matters</h2>
+      <p>
+        The paper is not just saying that CXL can work. It is also making an infrastructure argument. If every host needs its own
+        full Engram copy in local DRAM, memory cost scales linearly with node count. A shared pool changes that geometry: the
+        expensive large table is provisioned once, while hosts pay only for adapters and switch connectivity. The paper models
+        this tradeoff with simple component pricing for DRAM, a CXL switch, adapters, and memory controllers.
+      </p>
+      <p>
+        The result is intuitive. For a small deployment, CXL can lose because the switch and controller create a fixed entry cost.
+        For larger deployments or larger Engram tables, the economics turn sharply in favor of pooling. In the paper’s example,
+        a 100B Engram over two nodes is still cheaper with local DRAM, but at four nodes and beyond, the shared pool starts to
+        save money. For a 400B Engram, the pooled design is already cheaper even at two nodes and becomes dramatically cheaper as
+        the cluster grows.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Scenario</th>
+            <th>Local memory cost</th>
+            <th>CXL pool cost</th>
+            <th>Interpretation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>100B Engram, 2 nodes</td>
+            <td>$6,000</td>
+            <td>$9,820</td>
+            <td>CXL loses at small scale because fixed infrastructure dominates.</td>
+          </tr>
+          <tr>
+            <td>100B Engram, 8 nodes</td>
+            <td>$24,000</td>
+            <td>$12,880</td>
+            <td>Pooling starts to pay off once replication cost grows.</td>
+          </tr>
+          <tr>
+            <td>400B Engram, 2 nodes</td>
+            <td>$24,000</td>
+            <td>$18,820</td>
+            <td>Larger tables make shared storage economical much earlier.</td>
+          </tr>
+          <tr>
+            <td>400B Engram, 16 nodes</td>
+            <td>$192,000</td>
+            <td>$25,960</td>
+            <td>Replication becomes overwhelmingly more expensive than pooling.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        This cost section is important because it explains why the latency results matter operationally. If CXL were merely
+        “slightly slower DRAM,” the paper would be less interesting. It becomes interesting because the performance penalty is
+        small enough that operators may rationally choose it in exchange for materially lower cluster-wide memory cost.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>How Strong the Evidence Is</h2>
+      <p>
+        The paper is persuasive on the narrow question it chooses to answer: <em>can a shared CXL pool hold Engram tables and
+        serve them fast enough that inference remains close to a DRAM baseline?</em> On that question, the answer appears to be yes.
+        The latency measurements, the SGLang integration, and the small end-to-end throughput gap all point in the same direction.
+      </p>
+      <p>
+        The paper is less complete on broader questions. Because open Engram models are unavailable, the serving experiments are
+        necessarily a proxy rather than a true application benchmark. That means we learn about systems overhead, but not about
+        quality, retrieval usefulness, cache behavior under real Engram distributions, or interactions with other live workloads.
+        The authors are candid that this is a prototype evaluation rather than a production-grade deployment study.
+      </p>
+      <p>
+        There are also limits around the RDMA comparison. The paper shows that a straightforward RDMA-backed design performs
+        poorly, which is useful, but it also acknowledges that RDMA could look better with a more specialized implementation,
+        including direct peer-to-peer transfer interfaces, aggregation of small payloads, or caching of hot embeddings in DRAM.
+        So the paper does not prove that RDMA is fundamentally impossible for Engram. It shows that CXL is a cleaner fit for the
+        access pattern and reaches the target more naturally on current hardware.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>Open Questions and Research Directions</h2>
+      <p>
+        One open issue is coexistence with KV cache pooling. Prior systems often treat the memory pool as a KV-cache extension,
+        whereas Engram adds another workload with very different access semantics. KV caches are larger, more streaming-oriented,
+        and tied to request state, while Engram is global, static, and scattered. A production pool that serves both cleanly will
+        need careful allocation, prioritization, and isolation policies.
+      </p>
+      <p>
+        Another open question is how the design changes as CXL hardware evolves. The prototype uses a commercial CXL switch and a
+        single memory card, which is enough to establish feasibility. But larger systems could add interleaving across devices,
+        multiple controllers, or more direct GPU-facing pathways. If Engram becomes a first-class component in future models, the
+        hardware-software co-design space will probably get much richer than what this first paper explores.
+      </p>
+      <p>
+        Finally, the paper invites a bigger architectural question: if conditional memory becomes common, should it still be
+        treated as “model parameters” in the usual sense, or should it be managed as a distributed storage tier with its own
+        placement, caching, and replication policies? The authors implicitly lean toward the second view. That is what makes this
+        paper interesting beyond CXL itself.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>Final Assessment</h2>
+      <p>
+        This is a focused systems paper with a clear message. Engram introduces a memory-heavy but retrieval-light workload, and
+        CXL pooling matches that workload unusually well because it supports fine-grained remote memory access with latency much
+        closer to DRAM than conventional networked memory designs. The prototype is not the last word on memory-augmented LLM
+        infrastructure, but it makes a credible case that future Engram-like models do not need to pay the full cost of local
+        memory replication on every server.
+      </p>
+      <p>
+        The most defensible takeaway is not that CXL solves every memory problem in LLM serving. It is that <strong>for sparse,
+        read-only, prefetchable conditional memory, CXL pooling is already good enough to be operationally plausible</strong>.
+        That is a meaningful result, and it gives the paper practical relevance despite its early-stage prototype status.
+      </p>
+      <p class="footer">
+        Prepared from the arXiv source package and paper text for
+        <a href="https://arxiv.org/pdf/2603.10087v1">arXiv:2603.10087v1</a>.
+      </p>
+    </section>
+  </main>
+</body>
+</html>

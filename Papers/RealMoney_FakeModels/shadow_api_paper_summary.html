@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Summary Report: Real Money, Fake Models</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #5b6472;
+      --accent: #0f766e;
+      --accent-soft: #dff5f2;
+      --border: #e5eaf2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background: radial-gradient(circle at 20% -10%, #d7f3ff 0, transparent 35%), var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 28px auto;
+      padding: 0 16px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 8px 24px rgba(10, 25, 47, 0.06);
+    }
+    h1, h2, h3 { line-height: 1.2; margin-top: 0; }
+    h1 { font-size: 1.75rem; margin-bottom: 8px; }
+    h2 { font-size: 1.2rem; margin: 20px 0 10px; color: #0c4a6e; }
+    p { margin: 10px 0; }
+    .meta { color: var(--muted); font-size: 0.95rem; }
+    .pill {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: #0f5d58;
+      border: 1px solid #c7ece7;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.85rem;
+      margin: 4px 8px 0 0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .stat {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      background: #fbfdff;
+    }
+    .stat strong { display: block; font-size: 1.15rem; color: #0b5f5a; }
+    ul { margin: 8px 0 0 20px; padding: 0; }
+    li { margin-bottom: 6px; }
+    .foot {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px dashed var(--border);
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <article class="card">
+      <h1>Real Money, Fake Models: Deceptive Model Claims in Shadow APIs</h1>
+      <p class="meta">Easy-to-read summary report</p>
+      <p>
+        <span class="pill">ArXiv: 2603.01919</span>
+        <span class="pill">Version: v2 (Mar 5, 2026)</span>
+        <span class="pill">Authors: Yage Zhang et al.</span>
+      </p>
+
+      <h2>TL;DR</h2>
+      <p>
+        The paper audits unofficial “shadow APIs” that claim to serve frontier models (like GPT-5/Gemini-2.5) and finds frequent
+        mismatch with official APIs. The authors report large utility drops, unstable safety behavior, and direct identity mismatch
+        signals from fingerprinting. Their core conclusion: shadow APIs are not reliable substitutes for official APIs in research.
+      </p>
+
+      <h2>What the authors studied</h2>
+      <ul>
+        <li>Mapped the ecosystem: 17 shadow APIs found, linked to 187 research papers.</li>
+        <li>Benchmarked performance vs official APIs on science and sensitive tasks.</li>
+        <li>Audited safety behavior under jailbreak attacks.</li>
+        <li>Used model verification (LLM fingerprinting + MET statistical tests) to detect model substitution/deception.</li>
+      </ul>
+
+      <h2>Key findings (numbers)</h2>
+      <div class="grid">
+        <div class="stat">
+          <strong>47.21%</strong>
+          Largest reported performance divergence (sensitive-domain setting).
+        </div>
+        <div class="stat">
+          <strong>45.83%</strong>
+          Endpoints failed fingerprint identity verification.
+        </div>
+        <div class="stat">
+          <strong>+12.50%</strong>
+          Additional endpoints with major cosine-distance deviations.
+        </div>
+        <div class="stat">
+          <strong>17 APIs / 187 papers</strong>
+          Scope of shadow-API prevalence found by the study.
+        </div>
+      </div>
+
+      <ul>
+        <li>
+          In medical/legal tasks, accuracy drops are severe for some models. Example: Gemini-2.5-flash on MedQA drops from
+          <strong>83.82%</strong> (official) to around <strong>36.95%</strong> on tested shadow APIs.
+        </li>
+        <li>
+          Safety behavior is inconsistent: some shadow APIs understate or amplify harmfulness relative to official endpoints,
+          which can invalidate safety evaluations.
+        </li>
+        <li>
+          Fingerprinting suggests common substitution patterns (e.g., premium model claims mapping to cheaper/open models in some cases).
+        </li>
+      </ul>
+
+      <h2>Why this matters</h2>
+      <ul>
+        <li>Research reproducibility risk: results may not correspond to claimed models.</li>
+        <li>User risk: people can pay for premium outputs but receive lower-value or different-model behavior.</li>
+        <li>Ecosystem risk: damages trust in benchmark comparisons and model-provider reputation.</li>
+      </ul>
+
+      <h2>Limitations (as acknowledged in the paper)</h2>
+      <ul>
+        <li>Snapshot window (Sep–Dec 2025): shadow markets change rapidly over time.</li>
+        <li>No direct backend ground truth: inference is based on behavior/fingerprints/statistical tests.</li>
+        <li>Coverage is broad but not exhaustive (17 providers; selected model families).</li>
+      </ul>
+
+      <h2>Practical takeaway</h2>
+      <p>
+        If a project needs reliable claims about specific model behavior, use official APIs where possible. If unofficial endpoints
+        must be used, apply explicit verification (identity tests, distribution tests, multi-run variance checks, endpoint disclosure)
+        before treating results as valid.
+      </p>
+
+      <div class="foot">
+        Source paper: <a href="https://arxiv.org/abs/2603.01919" target="_blank" rel="noopener noreferrer">arxiv.org/abs/2603.01919</a><br />
+        This summary is based on the paper’s own reported experiments and claims.
+      </div>
+    </article>
+  </main>
+</body>
+</html>

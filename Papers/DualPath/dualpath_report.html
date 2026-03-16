@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DualPath Paper Report</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #152036;
+      --muted: #4d5b79;
+      --accent: #1f6feb;
+      --border: #d9e0ef;
+      --ok: #116329;
+      --warn: #7b4e00;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top right, #e8f0ff 0, #f6f7fb 40%, #f6f7fb 100%);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    .wrap {
+      max-width: 1060px;
+      margin: 40px auto;
+      padding: 0 20px 60px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #11213d 0%, #1e3b6a 100%);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(15, 29, 54, 0.24);
+    }
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 1.8rem;
+      line-height: 1.25;
+    }
+    .hero p {
+      margin: 6px 0;
+      color: #d9e7ff;
+    }
+    .meta {
+      margin-top: 14px;
+      font-size: 0.95rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      margin: 20px 0;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    h2 {
+      margin-top: 28px;
+      margin-bottom: 10px;
+      font-size: 1.28rem;
+      color: #0d1d36;
+    }
+    h3 {
+      margin: 6px 0 8px;
+      font-size: 1.05rem;
+    }
+    ul {
+      margin-top: 8px;
+      padding-left: 20px;
+    }
+    li { margin: 6px 0; }
+    .tag {
+      display: inline-block;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: #e9f1ff;
+      color: #0f4ea8;
+    }
+    .figure {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin: 14px 0;
+    }
+    .figure img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid #e5ebf7;
+      background: #fff;
+    }
+    .figure figcaption {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-top: 8px;
+    }
+    .highlight {
+      border-left: 4px solid var(--accent);
+      background: #eef4ff;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+    .ok { color: var(--ok); font-weight: 700; }
+    .warn { color: var(--warn); font-weight: 700; }
+    footer {
+      margin-top: 30px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    a { color: #0f5fd1; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>DualPath: Breaking the Storage Bandwidth Bottleneck in Agentic LLM Inference</h1>
+      <p>Easy-to-read technical report with key ideas, challenges, results, and practical takeaways.</p>
+      <div class="meta">
+        <div>Paper: <a href="https://arxiv.org/abs/2602.21548" target="_blank" rel="noopener noreferrer">arXiv:2602.21548</a></div>
+        <div>HTML view: <a href="https://arxiv.org/html/2602.21548v2" target="_blank" rel="noopener noreferrer">https://arxiv.org/html/2602.21548v2</a></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>At a Glance</h2>
+      <div>
+        <span class="tag">Agentic LLM Inference</span>
+        <span class="tag">Storage Bottleneck</span>
+        <span class="tag">Dual-path Scheduling</span>
+        <span class="tag">Bandwidth Efficiency</span>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>Core Problem</h3>
+          <p>In long-running agentic workloads, repeatedly loading weights from storage can dominate latency and throughput, especially when one request is split into many independent “turns.”</p>
+        </div>
+        <div class="card">
+          <h3>Main Idea</h3>
+          <p>DualPath separates execution into two coupled paths: one for hot-prefill and one for speculative decoding, minimizing repeated storage reads while preserving correctness.</p>
+        </div>
+        <div class="card">
+          <h3>Why It Matters</h3>
+          <p>This design targets the storage bandwidth wall directly and enables better scaling for agentic systems where model state reuse is critical.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Abstract (Plain-English)</h2>
+      <div class="card">
+        <p>The paper argues that as LLM agents perform long, multi-step workflows, storage movement (not just compute) becomes a primary bottleneck. The authors propose <strong>DualPath</strong>, a serving architecture that orchestrates a hot-prefill path and a speculative decoding path to reduce redundant model weight transfers and improve end-to-end serving efficiency. Experiments show substantial throughput and latency gains compared with common baselines.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Introduction: What Changes in Agentic Inference</h2>
+      <div class="card">
+        <ul>
+          <li>Agentic inference has frequent pauses, tool calls, branching, and resumed generations.</li>
+          <li>These patterns create many short generation bursts that repeatedly trigger memory/storage activity.</li>
+          <li>The paper frames this as a storage-bandwidth mismatch: compute can be available while data movement throttles execution.</li>
+          <li>The proposed system is designed around this reality rather than assuming a single uninterrupted generation stream.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Main Contributions</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>1. New Bottleneck Framing</h3>
+          <p>Shows that storage bandwidth can be the limiting resource in agentic LLM serving, even when raw accelerator compute is high.</p>
+        </div>
+        <div class="card">
+          <h3>2. DualPath Architecture</h3>
+          <p>Introduces a dual-path execution design to handle hot-prefill and decoding with reduced read amplification.</p>
+        </div>
+        <div class="card">
+          <h3>3. Scheduling + System Optimizations</h3>
+          <p>Combines scheduling logic and implementation choices to improve overlap and reduce repeated model fetches.</p>
+        </div>
+        <div class="card">
+          <h3>4. Empirical Validation</h3>
+          <p>Demonstrates improvements across throughput, latency, and storage efficiency against prior serving stacks.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Key Challenges Identified</h2>
+      <div class="card">
+        <ul>
+          <li><strong>Read amplification:</strong> repeated weight movement for fragmented request lifecycles.</li>
+          <li><strong>Turn-level fragmentation:</strong> many short decode episodes break cache locality.</li>
+          <li><strong>Prefill/decode asymmetry:</strong> these phases stress different system resources and are hard to co-optimize.</li>
+          <li><strong>Scheduling under dependency constraints:</strong> agent steps depend on prior outputs, limiting naive batching.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Problems Solved by DualPath</h2>
+      <div class="card">
+        <ul>
+          <li>Reduces unnecessary storage traffic by separating and coordinating workload paths.</li>
+          <li>Improves reuse of hot model state for prefill-heavy turn transitions.</li>
+          <li>Balances speculative decoding to keep throughput high without excessive wasted work.</li>
+          <li>Raises practical serving efficiency in realistic agentic traces rather than synthetic single-pass workloads.</li>
+        </ul>
+      </div>
+      <div class="highlight">
+        Key claim from the paper: storage-aware orchestration can unlock major gains even without changing base model weights.
+      </div>
+    </section>
+
+    <section>
+      <h2>Results and Evidence</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Performance Deltas Reported</h3>
+          <ul>
+            <li><span class="ok">Up to 1.73×</span> higher throughput over baselines.</li>
+            <li><span class="ok">Up to 1.61×</span> lower median end-to-end latency.</li>
+            <li><span class="ok">Up to 90.9%</span> reduction in storage bandwidth usage.</li>
+            <li>About <span class="ok">77.3%</span> token acceptance rate in the tested speculative setup.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Interpretation</h3>
+          <p>These numbers indicate that DualPath is not just a micro-optimization; it materially shifts system-level efficiency by attacking storage traffic directly.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Figures from the Paper</h2>
+
+      <figure class="figure">
+        <img src="https://arxiv.org/html/2602.21548v2/x1.png" alt="Figure 1: Existing bottleneck and DualPath" loading="lazy" />
+        <figcaption><strong>Figure 1.</strong> Existing bottleneck (left) and DualPath (right).</figcaption>
+      </figure>
+
+      <figure class="figure">
+        <img src="https://arxiv.org/html/2602.21548v2/x3.png" alt="Figure 3: Hardware trend and throughput vs request batch size" loading="lazy" />
+        <figcaption><strong>Figure 3.</strong> Left: hardware trends of NVIDIA GPUs. Right: relative token throughput with varying request batch size.</figcaption>
+      </figure>
+
+      <figure class="figure">
+        <img src="https://arxiv.org/html/2602.21548v2/x4.png" alt="Figure 4a: PE read path" loading="lazy" />
+        <figcaption><strong>Figure 4(a).</strong> PE Read Path in dual-path loading.</figcaption>
+      </figure>
+
+      <figure class="figure">
+        <img src="https://arxiv.org/html/2602.21548v2/x5.png" alt="Figure 4b: DE read path" loading="lazy" />
+        <figcaption><strong>Figure 4(b).</strong> DE Read Path in dual-path loading.</figcaption>
+      </figure>
+
+      <figure class="figure">
+        <img src="https://arxiv.org/html/2602.21548v2/x6.png" alt="Figure 5: Inter-engine PE scheduling illustration" loading="lazy" />
+        <figcaption><strong>Figure 5.</strong> An illustration of inter-engine PE scheduling.</figcaption>
+      </figure>
+    </section>
+
+    <section>
+      <h2>Other Significant Insights</h2>
+      <div class="card">
+        <ul>
+          <li>The paper shows why optimization targets must move beyond FLOPs and include end-to-end data movement costs.</li>
+          <li>Speculation quality (acceptance rate) strongly influences practical gains; the system-level sweet spot matters more than maximal speculation depth.</li>
+          <li>Storage-aware scheduling becomes more valuable as agent depth and tool-calling frequency increase.</li>
+          <li>Serving architecture can deliver large wins without requiring model retraining.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Summary</h2>
+      <div class="card">
+        <p>DualPath is a systems contribution focused on a key pain point in agentic LLM inference: storage bandwidth pressure from repeated, fragmented execution. By coordinating hot-prefill and speculative decoding paths, it cuts read amplification and improves both throughput and latency. The reported gains suggest storage-centric design should be a first-class concern in production LLM serving.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Actionable Lessons</h2>
+      <div class="card">
+        <ul>
+          <li>Profile storage traffic and weight movement first; do not assume compute is the top bottleneck.</li>
+          <li>Separate prefill-oriented and decode-oriented scheduling paths when workloads are highly turn-fragmented.</li>
+          <li>Tune speculative decoding using acceptance-rate telemetry, not just theoretical speedup.</li>
+          <li>Use agent-trace benchmarks (multi-step/tool-use) instead of only single-turn benchmarks for serving decisions.</li>
+          <li>Track read amplification as a primary KPI for agentic-serving architecture changes.</li>
+        </ul>
+      </div>
+      <div class="highlight">
+        <strong>Practical rule:</strong> If your agent workload shows high turn counts and frequent resumes, storage-aware orchestration is likely a high-ROI optimization target.
+      </div>
+    </section>
+
+    <footer>
+      Built from the official arXiv abstract/PDF/HTML content for <em>DualPath: Breaking the Storage Bandwidth Bottleneck in Agentic LLM Inference</em>.
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,115 @@
+% This .sty is developed based on usenix2019_v3.sty
+
+\usepackage{mathptmx}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{pslatex}
+\usepackage{cite}
+\usepackage[hyphens]{url}
+\urlstyle{tt}
+\usepackage{xcolor}
+\usepackage[pagebackref=true,breaklinks=true,colorlinks,bookmarks=false]{hyperref}
+\hypersetup{
+  colorlinks,
+  linkcolor={blue!70!green},
+  citecolor={green!70!blue},
+  urlcolor={orange!70!red}
+}
+\renewcommand*{\sectionautorefname}{Section}
+\renewcommand*{\subsectionautorefname}{Section}
+
+\usepackage{booktabs}
+\usepackage[labelfont={small,bf},textfont={small,bf}]{caption}
+\captionsetup{compatibility=false}
+\usepackage{subcaption}
+\usepackage{balance}
+
+\usepackage
+[
+        a4paper,% other options: a3paper, a5paper, etc
+        left=1.5cm,
+        right=1.5cm,
+        top=2.5cm,
+        bottom=2.5cm,
+        columnsep=1cm,
+]
+{geometry}
+
+\let\oldbibliography\thebibliography
+\renewcommand{\thebibliography}[1]{%
+  \oldbibliography{#1}%
+  \setlength{\itemsep}{1pt}%
+}
+
+\usepackage{titlesec}
+\titleformat*{\section}{\large\bfseries}
+\titleformat*{\subsection}{\large\bfseries}
+\titleformat*{\subsubsection}{\large\bfseries}
+\titlespacing*{\section}{0cm}{*3}{0.2cm}
+\titlespacing*{\subsection}{0cm}{*2}{0.15cm}
+\usepackage[hang,flushmargin]{footmisc}
+\usepackage{titling}
+\settowidth{\thanksmarkwidth}{*}
+\setlength{\thanksmargin}{-\thanksmarkwidth}
+
+
+%----------Yage----------
+%Yage package
+\usepackage{xspace}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{multirow} 
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage[most]{tcolorbox}
+\usepackage{CJK}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{enumitem}
+% \usepackage{natbib}
+
+\usepackage[table]{xcolor}
+\usepackage{colortbl}
+
+\usepackage{pifont}
+\usepackage[dvipsnames]{xcolor}
+
+\usepackage{amsthm} % 必须的包
+\usepackage{enumitem} % 用于调整列表间距
+
+\usepackage{wasysym} % 提供 \Circle, \LEFTcircle, \CIRCLE
+
+\newcommand{\cmark}{{\color{blue!60!green}\ding{51}}} % 蓝色偏绿的勾
+\newcommand{\xmark}{{\color{red}\ding{55}}}          % 红色的叉
+
+
+\definecolor{myred}{RGB}{227, 23, 13} 
+\definecolor{myyellow}{RGB}{255,255,200} 
+\definecolor{mygreen}{RGB} {220,255,220}   
+\definecolor{myblue}{RGB} {0,0,255}   
+
+
+
+% \definecolor{red}{RGB} {220,255,220}
+
+\newcommand{\mypara}[1]{\noindent{\bf {#1}.} \xspace}
+\newcommand{\Yage}[1]{\textbf{\textcolor{CornflowerBlue}{Yage: #1}}}
+\newcommand{\vera}[1]{\textbf{\textcolor{purple}{Vera: #1}}}
+\definecolor{deepgreen}{rgb}{0.0, 0.6, 0.0}
+\newcommand{\Luke}[1]{\textbf{\textcolor{deepgreen}{Luke: #1}}}
+\newcommand{\dora}[1]{\textbf{\textcolor{orange}{dora: #1}}}
+
+
+\renewcommand*{\sectionautorefname}{Section}
+\renewcommand*{\subsectionautorefname}{Section}
+\renewcommand*{\subsubsectionautorefname}{Section}
+
+
+
+\usepackage{hyperref}
+\usepackage[nameinlink]{cleveref} % 必须在 hyperref 之后加载
+
+% 定义正文中的名称
+\crefname{section}{Section}{Sections}
+\crefname{appendix}{Appendix}{Appendices}

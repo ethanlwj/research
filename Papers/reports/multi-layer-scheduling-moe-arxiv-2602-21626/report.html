@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Research Summary: Multi-Layer Scheduling for MoE-Based LLM Reasoning</title>
+  <style>
+    :root {
+      --bg: #f4f8ff;
+      --bg-panel: #ffffff;
+      --ink: #10233f;
+      --muted: #3e5f8a;
+      --line: #c9dbf3;
+      --accent: #1b5fbf;
+      --accent-soft: #e6f0ff;
+      --accent-deep: #0f3f8f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Georgia", "Times New Roman", serif;
+      background: radial-gradient(circle at top right, #e4efff, var(--bg) 45%), var(--bg);
+      color: var(--ink);
+      line-height: 1.55;
+    }
+    .wrap {
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 32px 20px 64px;
+    }
+    .hero {
+      background: linear-gradient(140deg, #1b5fbf, #0f3f8f);
+      color: #fff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 8px 28px rgba(16, 35, 63, 0.2);
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 1.65rem;
+      line-height: 1.25;
+    }
+    .hero p {
+      margin: 0;
+      font-size: 0.98rem;
+      opacity: 0.95;
+    }
+    .panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 1.2rem;
+      color: var(--accent-deep);
+      border-left: 4px solid var(--accent);
+      padding-left: 10px;
+    }
+    h3 {
+      margin: 14px 0 8px;
+      color: var(--accent-deep);
+      font-size: 1rem;
+    }
+    p { margin: 8px 0; }
+    ul { margin: 8px 0 8px 20px; padding: 0; }
+    li { margin: 8px 0; }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 8px 14px;
+      font-size: 0.97rem;
+    }
+    .meta-grid dt {
+      font-weight: 700;
+      color: var(--accent-deep);
+    }
+    .meta-grid dd {
+      margin: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: var(--accent-soft);
+      color: var(--accent-deep);
+    }
+    .quote {
+      border-left: 4px solid var(--accent);
+      background: #f0f6ff;
+      padding: 10px 12px;
+      margin: 10px 0;
+      font-style: italic;
+      color: #1b3359;
+    }
+    .small { font-size: 0.9rem; color: var(--muted); }
+    .tag {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--accent-deep);
+      border: 1px solid #bdd3f6;
+      border-radius: 999px;
+      padding: 2px 10px;
+      margin: 0 6px 6px 0;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    code {
+      background: #ecf3ff;
+      padding: 1px 5px;
+      border-radius: 4px;
+      border: 1px solid #d8e5fa;
+      font-size: 0.92em;
+    }
+    a { color: var(--accent); }
+    @media (max-width: 760px) {
+      .meta-grid {
+        grid-template-columns: 1fr;
+      }
+      .wrap {
+        padding: 20px 12px 40px;
+      }
+      .hero h1 {
+        font-size: 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>Research Report: Multi-Layer Scheduling for MoE-Based LLM Reasoning</h1>
+      <p>In-depth academic summary, technical analysis, and gap assessment of arXiv:2602.21626 (v2).</p>
+    </section>
+
+    <section class="panel">
+      <h2>Paper Metadata</h2>
+      <dl class="meta-grid">
+        <dt>Title</dt>
+        <dd>Multi-Layer Scheduling for MoE-Based LLM Reasoning</dd>
+
+        <dt>Authors</dt>
+        <dd>Yifan Sun; Gholamreza Haffari; Minxian Xu; Rajkumar Buyya; Adel N. Toosi</dd>
+
+        <dt>Affiliations</dt>
+        <dd>
+          DisNet Lab, School of Computing and Information Systems, The University of Melbourne (Australia);<br/>
+          Faculty of Information Technology, Monash University (Australia);<br/>
+          Shenzhen Institute of Advanced Technology, Chinese Academy of Sciences (China).
+        </dd>
+
+        <dt>Venue / Status</dt>
+        <dd>arXiv preprint, subject area <code>cs.DC</code> (Distributed, Parallel, and Cluster Computing).</dd>
+
+        <dt>arXiv ID</dt>
+        <dd><a href="https://arxiv.org/abs/2602.21626">arXiv:2602.21626</a> (version analyzed: v2).</dd>
+
+        <dt>Submission Timeline</dt>
+        <dd>v1 submitted on February 25, 2026; v2 revised on March 2, 2026.</dd>
+
+        <dt>Length / Assets</dt>
+        <dd>12 pages, 10 figures (as stated in arXiv comments).</dd>
+
+        <dt>Primary Baseline</dt>
+        <dd>vLLM (paper notes vLLM 0.9.2 in experiments).</dd>
+
+        <dt>DOI</dt>
+        <dd><a href="https://doi.org/10.48550/arXiv.2602.21626">10.48550/arXiv.2602.21626</a></dd>
+      </dl>
+    </section>
+
+    <section class="panel">
+      <h2>Context and Problem Statement</h2>
+      <p>
+        The paper addresses a systems bottleneck: MoE-based LLMs can lower per-token compute relative to dense models,
+        but serving efficiency remains constrained by scheduling decisions across multiple layers of the serving stack.
+        Existing deployments often rely on simple policies (e.g., FCFS and round-robin), which the authors argue do not
+        capture MoE-specific heterogeneity such as dynamic expert hotspots, cache pressure, and inter-GPU communication costs.
+      </p>
+      <div class="quote">"simple scheduling strategies ... may suffer from head-of-line blocking and load imbalance."</div>
+      <p>
+        Their core claim is that independent local policies are insufficient; instead, request queue ordering, engine dispatch,
+        and expert placement must be co-designed. The framework proposed for this co-design is called <strong>GIMBAL</strong>.
+      </p>
+      <div>
+        <span class="tag">Request-Level</span>
+        <span class="tag">Engine-Level</span>
+        <span class="tag">Expert-Level</span>
+        <span class="tag">MoE Serving</span>
+        <span class="tag">Latency Optimization</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Method Summary: GIMBAL</h2>
+      <h3>1) Request-level scheduling (within each DP engine)</h3>
+      <ul>
+        <li>
+          <strong>Approximate SJF by prefill length:</strong> Requests are prioritized by prefill token length (<code>r.prompt</code>) as a proxy for near-term compute cost.
+          The paper motivates this choice by avoiding output-length prediction errors common in prior SJF-like methods.
+        </li>
+        <li>
+          <strong>Aging for anti-starvation:</strong> If wait time exceeds <code>θ_age</code>, long requests are promoted to high priority.
+          This keeps short-job preference from causing pathological tail delays for large prompts.
+        </li>
+      </ul>
+
+      <h3>2) Engine-level dispatch (DP load balancer)</h3>
+      <ul>
+        <li>
+          <strong>KV-aware routing:</strong> Dispatch first checks per-engine KV cache utilization. If max utilization passes <code>θ_kv</code>
+          and imbalance exceeds <code>θ_diff</code>, requests are redirected to less saturated engines.
+        </li>
+        <li>
+          <strong>Running-load balancing:</strong> If KV imbalance is not severe, dispatch uses token-based running load (<code>RunningLoad</code>)
+          rather than raw request count, which better reflects compute burden.
+        </li>
+        <li>
+          <strong>User stickiness:</strong> Requests can be routed to prior user-affined engines (when valid), targeting higher prefix-cache reuse.
+        </li>
+      </ul>
+
+      <h3>3) Expert-level scheduling (dynamic replacement)</h3>
+      <ul>
+        <li>
+          <strong>Hotspot and affinity-aware placement:</strong> The paper observes skewed expert activation and cross-layer affinity, then formulates
+          expert assignment as balancing activation load while reducing communication cut.
+        </li>
+        <li>
+          <strong>MILP-style objective + practical heuristic:</strong> While a formal optimization objective is introduced, runtime inference uses a heuristic
+          (anchor affinity placement + greedy least-loaded assignment) due to MILP overhead.
+        </li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h2>Experimental Setup and Evidence</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Dimension</th>
+            <th>Details Reported in Paper</th>
+            <th>Why It Matters</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Hardware</td>
+            <td>Single server: AMD EPYC CPU + 2× NVIDIA A100 80GB (NVLink), 1TB RAM.</td>
+            <td>Good for controlled multi-GPU MoE tests, but limited external validity to large clusters.</td>
+          </tr>
+          <tr>
+            <td>Model</td>
+            <td>Qwen3-30B-A3B (MoE).</td>
+            <td>Representative moderate-size MoE, though only one model family is tested.</td>
+          </tr>
+          <tr>
+            <td>Workloads</td>
+            <td>BurstGPT traces reshaped into five distributions (Random, Central, Descending, Two-end, Average); plus ShareGPT for prefix-cache study.</td>
+            <td>Gives distributional diversity, but still constrained to two public trace sources.</td>
+          </tr>
+          <tr>
+            <td>Baselines</td>
+            <td>vLLM and three ablations: DPLB-only, SJFS-only, EDR-only.</td>
+            <td>Useful decomposition of per-module effects and additive gains.</td>
+          </tr>
+          <tr>
+            <td>Metrics</td>
+            <td>TTFT, TPOT, throughput, prefix-cache hit count/rate.</td>
+            <td>Covers both latency and efficiency proxies, but no cost-per-token metric is provided.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Headline results (paper-reported)</h3>
+      <ul>
+        <li>
+          <strong>TTFT:</strong> At 1.4 RPS (averaged across five distributions), GIMBAL reports about <strong>17.76%</strong> reduction vs vLLM
+          (distribution-level reductions shown around 16.4% to 18.7%). This indicates a robust first-token latency gain under higher offered load.
+        </li>
+        <li>
+          <strong>TPOT:</strong> Average TPOT reduction is reported as <strong>13.34%</strong> at 1.4 RPS, with per-distribution gains from 7.9% to 17.6%.
+          This suggests the approach improves not only queue entry latency but also steady-state decode efficiency.
+        </li>
+        <li>
+          <strong>Throughput:</strong> The paper states throughput remains comparable to vLLM. The implication is that latency reductions are not obtained via
+          aggressive throttling or trivial throughput sacrifice.
+        </li>
+        <li>
+          <strong>Prefix-cache behavior:</strong> In repeated ShareGPT-based runs, the paper reports improved cache-hit statistics (average hit rate improvement ~4.4%).
+          This supports the claim that user-affinity dispatch can indirectly reduce redundant prefill compute.
+        </li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h2>Key Contributions</h2>
+      <ul>
+        <li>
+          <strong>Cross-layer scheduling integration:</strong> The strongest contribution is architectural: the paper treats serving performance as a coupled
+          optimization problem across request queueing, engine routing, and expert placement, rather than isolated local heuristics.
+        </li>
+        <li>
+          <strong>Pragmatic request-cost proxy:</strong> Using prefill length as SJF signal is a practical systems decision that avoids brittle generation-length prediction;
+          this design likely improves portability across models/workloads.
+        </li>
+        <li>
+          <strong>MoE-aware engine dispatch signals:</strong> Combining KV utilization, token-based running load, and user stickiness expands beyond conventional
+          round-robin and makes dispatch explicitly state-aware.
+        </li>
+        <li>
+          <strong>Affinity-aware expert relocation:</strong> Incorporating cross-layer expert affinity into placement extends hotspot balancing toward communication-aware
+          scheduling, which is particularly relevant for expert-parallel MoE inference.
+        </li>
+        <li>
+          <strong>Ablation-backed attribution:</strong> Reporting DPLB/SJFS/EDR variants clarifies where gains come from (paper indicates DPLB contributes most TTFT gain),
+          which increases interpretability of system-level improvements.
+        </li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h2>Critical Gaps and Limitations</h2>
+      <ul>
+        <li>
+          <strong>Scale realism gap:</strong> Evaluation is limited to one 2-GPU server and one MoE model. This leaves uncertainty about behavior in heterogeneous,
+          multi-node production clusters where network topology, interference, and tenant contention are significantly more complex.
+        </li>
+        <li>
+          <strong>Offline affinity dependency:</strong> The expert module requires offline inter-layer affinity collection and periodic migration. This may create
+          non-trivial operational overhead and staleness risk if workloads or model routing dynamics drift over time.
+        </li>
+        <li>
+          <strong>Threshold sensitivity not deeply explored:</strong> The framework includes multiple thresholds (<code>θ_kv</code>, <code>θ_diff</code>, <code>θ_load</code>, <code>θ_age</code>, <code>τ</code>)
+          with rationale, but the paper does not present a broad hyperparameter sensitivity study across hardware/model regimes.
+        </li>
+        <li>
+          <strong>Limited baseline breadth:</strong> The main baseline is vLLM plus internal ablations; broader comparisons against other recent serving stacks and MoE-aware
+          schedulers would strengthen external validity of the gains.
+        </li>
+        <li>
+          <strong>Cost and stability metrics are underdeveloped:</strong> Latency and throughput are covered, but there is no detailed accounting of migration overhead,
+          GPU utilization variance over time, energy/cost per token, or long-horizon QoS fairness metrics.
+        </li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h2>Interpretation and Research Insights</h2>
+      <ul>
+        <li>
+          <strong>Main systems insight:</strong> In MoE serving, queue policy, dispatch policy, and expert placement interact nonlinearly.
+          Optimizing only one layer can leave latent capacity unused; coordinated policies can convert that latent capacity into lower latency.
+        </li>
+        <li>
+          <strong>Practical deployment implication:</strong> Engine-level balancing appears to dominate TTFT gains in this paper, implying many production systems may obtain
+          immediate wins from stronger load-aware dispatch before implementing full expert-level relocation.
+        </li>
+        <li>
+          <strong>Future research direction:</strong> A compelling extension is online affinity estimation with budgeted migration, turning expert placement into a
+          feedback-controlled optimization under explicit overhead constraints.
+        </li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h2>Concise Takeaway</h2>
+      <p>
+        This paper makes a meaningful contribution to MoE inference systems by showing that multi-layer scheduling coordination can produce substantial latency improvements
+        (<code>TTFT</code> and <code>TPOT</code>) without obvious throughput degradation in the tested setting. The strongest unresolved question is whether these benefits persist
+        at production scale when placement/migration overheads and cluster heterogeneity are fully accounted for.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>Sources</h2>
+      <p class="small">
+        Primary source analyzed: <a href="https://arxiv.org/abs/2602.21626">arXiv abstract page</a> and
+        <a href="https://arxiv.org/pdf/2602.21626">arXiv PDF (v2)</a>.
+      </p>
+    </section>
+  </main>
+</body>
+</html>
