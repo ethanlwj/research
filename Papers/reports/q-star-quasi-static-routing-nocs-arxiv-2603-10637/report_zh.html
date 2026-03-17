@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q-StaR 技术报告（中文）</title>
+  <style>
+    :root {
+      --bg: #f6f1ed;
+      --panel: #ffffff;
+      --ink: #241d19;
+      --muted: #6c635d;
+      --line: #e2d9d1;
+      --accent: #8a4d2a;
+      --accent-dark: #613419;
+      --hero-a: #8a4d2a;
+      --hero-b: #6b2e3a;
+      --soft: #f8eee6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", serif;
+      color: var(--ink);
+      line-height: 1.82;
+      background:
+        radial-gradient(circle at top right, rgba(138, 77, 42, 0.12), transparent 28%),
+        linear-gradient(180deg, #fcfaf8 0%, var(--bg) 100%);
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 30px 18px 56px;
+    }
+    .hero {
+      background: linear-gradient(135deg, var(--hero-a), var(--hero-b));
+      color: #fff;
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 14px 34px rgba(36, 29, 25, 0.16);
+      margin-bottom: 18px;
+    }
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 1.95rem;
+      line-height: 1.2;
+    }
+    .hero p {
+      margin: 0;
+      font-size: 1rem;
+      opacity: 0.96;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 16px;
+      box-shadow: 0 5px 18px rgba(36, 29, 25, 0.05);
+    }
+    h2 {
+      margin: 0 0 14px;
+      font-size: 1.24rem;
+      color: var(--accent-dark);
+      border-left: 4px solid var(--accent);
+      padding-left: 10px;
+    }
+    p {
+      margin: 10px 0;
+      text-align: justify;
+    }
+    .meta {
+      display: grid;
+      grid-template-columns: 170px 1fr;
+      gap: 8px 14px;
+    }
+    .meta dt {
+      color: var(--accent-dark);
+      font-weight: 700;
+    }
+    .meta dd {
+      margin: 0;
+    }
+    .small {
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+    a { color: var(--accent); }
+    code {
+      background: #fbf0e7;
+      border: 1px solid #ecd8c8;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 0.92em;
+    }
+    @media (max-width: 760px) {
+      .meta {
+        grid-template-columns: 1fr;
+      }
+      .hero h1 {
+        font-size: 1.55rem;
+      }
+      .wrap {
+        padding: 18px 12px 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>Q-StaR: A Quasi-Static Routing Scheme for NoCs</h1>
+      <p>基於 arXiv:2603.10637v1 撰寫的中文技術報告。</p>
+    </section>
+
+    <section class="panel">
+      <h2>論文資訊</h2>
+      <dl class="meta">
+        <dt>題目</dt>
+        <dd>Q-StaR: A Quasi-Static Routing Scheme for NoCs</dd>
+        <dt>作者</dt>
+        <dd>Yang Zhang、Yiren Zhao、Xu Wang、Fengyuan Ren</dd>
+        <dt>來源</dt>
+        <dd><a href="https://arxiv.org/abs/2603.10637">arXiv:2603.10637</a>，本文分析版本為 v1</dd>
+        <dt>日期</dt>
+        <dd>2026 年 3 月 11 日</dd>
+        <dt>核心方案</dt>
+        <dd>由 <code>N-Rank</code> 與 <code>BiDOR</code> 組成的 Q-StaR 架構</dd>
+      </dl>
+    </section>
+
+    <section class="panel">
+      <h2>1. Executive Summary</h2>
+      <p>
+        本文聚焦於片上網路路由中的一個長期矛盾：靜態路由因為實作簡單、行為可預測、硬體成本低，因此在 NoC 中極具吸引力；
+        然而，一旦面對非均勻或帶有熱點的流量分布，靜態路由往往難以有效平衡負載。相對地，自適應路由雖能根據擁塞狀態動態調整，
+        但同時也帶來額外的硬體狀態、控制複雜度、驗證成本以及亂序傳輸問題。Q-StaR 的核心貢獻，在於提出一種介於兩者之間的
+        準靜態路由設計：它保留決定性路由在運行時的簡潔性，同時利用拓撲與流量矩陣所蘊含的長期負載趨勢，提前優化路由選擇。
+      </p>
+      <p>
+        該架構包含兩個主要模組。<code>N-Rank</code> 透過演化模型，根據拓撲與流量分布估計各節點長期承受高負載的可能性，
+        以節點權重 <code>w_NR</code> 表示。<code>BiDOR</code> 則對每一組源端與目的端，比較 XY 與 YX 兩條最小維序路徑的
+        累積權重，離線選出較低成本的路徑，並將結果編碼為位圖，供運行時快速查詢。實驗結果顯示，該方法在維持低控制開銷的同時，
+        能顯著優於傳統 XY 路由，包含在均勻流量下取得 42.9% 的吞吐提升，以及在真實工作負載下大幅降低平均與最大延遲。
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>2. Introduction</h2>
+      <p>
+        片上網路是現代 SoC 中負責核心、加速器、記憶體介面與 I/O 模組之間資料交換的基礎設施。在眾多 NoC 拓撲之中，
+        二維 Mesh 由於其規則性、可擴展性以及與實體佈局的良好對應關係，至今仍是最常見的設計選擇之一。在此基礎上，
+        維序路由（dimension-order routing, DOR）長期被廣泛採用，因為它具有硬體實現簡潔、可證明無死鎖、封包順序穩定，
+        且分析與驗證成本相對低廉等優點。
+      </p>
+      <p>
+        然而，DOR 的路由決策不考慮實際流量分布，這使其在面對偏斜流量、熱點通信或結構性工作負載時，容易產生持續性的
+        負載不均。當特定路由器或鏈路反覆成為流量匯聚點時，整體網路吞吐會受到抑制，而端到端延遲也會大幅上升。過去研究
+        一方面提出無感知路由（oblivious routing），試圖將流量分散到多條可能路徑上；另一方面提出自適應路由（adaptive routing），
+        透過監測執行期間的擁塞資訊來動態導流。不過，前者容易因缺乏精準負載認知而產生不必要繞路，後者則需要額外硬體狀態、
+        控制機制與更複雜的死鎖處理策略。
+      </p>
+      <p>
+        本文的研究動機在於指出：NoC 的負載分布並非完全隨機，而是受到拓撲結構與工作負載流量矩陣的長期約束。這些資訊相較於
+        瞬時擁塞更穩定，因此更適合在離線階段被分析與編譯成路由策略。基於此，論文提出的核心問題是：能否利用這類準動態資訊，
+        在不引入高昂運行時控制成本的情況下，取得接近自適應路由的負載平衡效果。Q-StaR 正是針對這一問題所提出的回答。
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>3. Key Methods</h2>
+      <p>
+        Q-StaR 的方法論可以概括為「離線推斷、在線執行」。第一個組件 <code>N-Rank</code> 用來估計各節點在長時間尺度下成為
+        高負載節點的傾向。它以拓撲結構與流量矩陣為輸入，其中流量矩陣描述每個來源節點到每個目的節點的流量比例。作者引入一個
+        演化模型，將流量抽象為先注入網路、再依照轉移概率在節點之間傳遞、最後於目的端被排出的過程。在這個迭代過程中，
+        每個節點所累積經歷的負載即形成其 NR-weight，也就是 <code>w_NR</code>。
+      </p>
+      <p>
+        值得注意的是，轉移概率與排出概率並非任意設定，而是根據「不繞路」條件下某條信道可能被哪些源端與目的端流量使用來決定。
+        也就是說，N-Rank 並不試圖擬合每一個瞬時壅塞狀態，而是透過拓撲與流量可達性分析，萃取出負載集中最主要的空間趨勢。
+        這種設計使其能在不依賴實時感測的情況下，仍然為路由策略提供有意義的結構性資訊。
+      </p>
+      <p>
+        第二個組件 <code>BiDOR</code> 則利用這些節點權重做實際路由選擇。對每一組源端與目的端，它比較 2D Mesh 中兩條
+        最小維序路徑，即 XY 與 YX，並計算各自路徑上所有節點 <code>w_NR</code> 的總和。總權重較低的路徑會被離線選中，
+        並記錄在以目的節點為索引的位圖中。如此一來，運行時的決策只需完成一次位圖查詢。再加上作者用兩個獨立虛通道分別承載
+        XY 與 YX 流量，便能在保留決定性行為的同時維持無死鎖特性。
+      </p>
+      <p>
+        此方法之所以有效，在於它以極低的運行時成本，將比傳統 DOR 更豐富的負載知識納入路由決策。它不是對局部擁塞進行快速反應，
+        而是先驗地避開那些在結構上更容易形成壓力集中的區域。因此，Q-StaR 能在靜態路由與動態路由之間取得相當有說服力的折中。
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>4. Key Results</h2>
+      <p>
+        論文使用 BookSim2 這一週期精確的 NoC 模擬器進行評估。基本實驗平台為一個 5×5 的 2D Mesh，邊緣節點提供 20 個 I/O 埠，
+        採用 wormhole 流控、每個輸入埠 64-flit 緩衝區、兩個虛通道，以及每跳 2 個周期的基礎延遲。比較對象包含代表性的
+        決定性路由、無感知路由與自適應路由，分別是 XY、O1Turn、Valiant、ROMM 與 Odd-Even。評估指標則涵蓋吞吐量、
+        延遲、負載變異係數（LCV），以及透過虛擬 reorder buffer 模型估算的亂序成本。
+      </p>
+      <p>
+        在合成流量實驗中，作者首先用簡化案例說明 N-Rank 對運行時負載趨勢具有良好的預測能力，而 BiDOR 能透過逆向避開
+        熱點區域來有效降低不均衡。進一步在 uniform、shuffle、permutation 與 overturn 等典型流量模式下進行比較後，
+        其中最具代表性的結果是：在 uniform 流量下，BiDOR 相較傳統 XY 路由帶來 42.9% 的吞吐提升。論文同時指出，
+        BiDOR 的整體表現與自適應 Odd-Even 相近，且在 overturn 這類較不利的流量模式中，甚至可能因為更依賴全域長期趨勢而表現得更穩健。
+      </p>
+      <p>
+        真實工作負載實驗則來自 ns-3 所模擬的 Clos 網路中，一個 leaf switch 之埠間流量追蹤。在這一情境中，所有工作負載都能在
+        有限時間內完成，因此吞吐量不再是主要區分指標，延遲與負載均衡更具參考性。作者報告，與 XY 路由相比，平均延遲由 149.6
+        下降到 20.4 個周期，降幅為 86.4%；最大延遲由 572 下降到 27 個周期，降幅為 95.3%。此外，由於 Q-StaR 的路由選擇
+        不會像一般動態路由一樣頻繁切換，因此也大幅降低了亂序傳輸所引發的額外成本。
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>5. Conclusion</h2>
+      <p>
+        本文最主要的結論是：許多原本被認為必須透過自適應路由才能獲得的效益，其實可以藉由精心設計的準靜態策略來取得。
+        Q-StaR 透過從拓撲與流量分布中提取長期負載趨勢，在維持維序路由簡潔性的前提下，有效改善了負載均衡與延遲表現。
+        這一結果的重要性，在於它證明高品質 NoC 路由不一定要依賴細粒度的運行時反應。
+      </p>
+      <p>
+        更廣泛地看，這篇工作對未來研究的啟示是：若應用程式相位、通信圖或部署環境的流量統計具有足夠穩定性，那麼離線知識就不僅
+        可以用於編譯器或任務映射，也可以更積極地用於路由、仲裁甚至拓撲管理。換言之，Q-StaR 的價值不只是一個具體演算法，
+        更是一種符合硬體現實的網路設計思路。
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>6. Insights and Critical Analysis</h2>
+      <p>
+        論文最重要的優點之一，在於它重新定義了問題。作者沒有把路由視為一個必須完全依靠即時回饋的反應式控制問題，而是將其
+        轉化為一個較長時間尺度上的預測與編譯問題。這一觀點相當有價值，因為在許多 SoC 中，流量既不是完全隨機，也不是完全對抗式，
+        而是會受到軟體行為、核心配置與拓撲結構的共同制約。Q-StaR 正是抓住了這種結構性，並以比傳統決定性路由更有效的方式將其利用起來。
+      </p>
+      <p>
+        其最具新意之處，在於將負載推斷與路由執行明確分離。N-Rank 提供一個對未來擁塞趨勢的簡潔抽象，而 BiDOR 則把這種抽象
+        轉化成可直接部署的決定性路徑選擇表。這種分工賦予方案相當強的工程可行性，也解釋了為何作者能同時兼顧簡潔性、無死鎖性
+        與低亂序開銷。對於強調驗證成本與時序收斂的晶片設計而言，這些特性本身就具有很高價值。
+      </p>
+      <p>
+        然而，Q-StaR 的有效性也高度依賴流量矩陣的穩定度與準確性。如果 SoC 面對快速變化的工作負載相位、多租戶干擾，
+        或高度突發且難以預測的流量模式，那麼離線計算出的權重就可能快速失效。論文雖然把流量可預測性作為前提，但並未深入量化
+        預測誤差對最終性能的敏感性。這其實是決定該方法適用邊界的關鍵問題。
+      </p>
+      <p>
+        從未來研究角度來看，本文打開了幾條值得延伸的方向。第一，準靜態路由可以與輕量級在線修正機制結合，形成分層式混合方案。
+        第二，可以把這種思路推廣到非 Mesh 拓撲、異質鏈路或不同規模的片上互連環境。第三，若能把策略更新頻率、離線重計算代價
+        與系統部署條件一起納入分析，則會使 Q-StaR 更接近實際產品化情境。
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>7. Critique</h2>
+      <p>
+        這篇論文最成功的地方，在於它選擇了一個技術上有意義、工程上又具可部署性的設計點。其方法結構清楚，演化模型的論證邏輯完整，
+        實驗結果也有效支撐了「利用長期工作負載知識可以顯著改善決定性路由」這一主張。尤其值得肯定的是，作者並未只提出一個對 XY
+        的局部修補技巧，而是提出了一種更一般化的準靜態優化思路。
+      </p>
+      <p>
+        不過，若從嚴格評審角度來看，實驗證據的覆蓋範圍仍然偏窄。論文主要聚焦於 5×5 Mesh 與單一真實交換機流量追蹤場景。
+        雖然結果相當亮眼，但若能進一步系統性評估在流量預測誤差、網路規模擴大、多種實際工作負載以及離線重計算成本下的表現，
+        將更能鞏固其一般性結論。此外，若能與更多較新或更強調硬體可實作性的自適應基線比較，也能讓其複雜度與性能折衷主張更具說服力。
+      </p>
+      <p>
+        綜合而言，我對這篇論文的評價是正面的。它提出了一個簡潔、直觀且具有系統洞見的方案，並用有力的實驗結果證明其價值。
+        其主要弱點不在概念本身，而在於目前對泛化能力與敏感性邊界的說明尚不充分。即便如此，它仍然是一篇對 NoC 路由研究具有啟發性的工作。
+      </p>
+    </section>
+
+    <section class="panel">
+      <p class="small">
+        來源：<a href="https://arxiv.org/abs/2603.10637">Q-StaR: A Quasi-Static Routing Scheme for NoCs, arXiv:2603.10637</a>。
+      </p>
+    </section>
+  </main>
+</body>
+</html>

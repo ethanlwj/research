@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q-StaR Technical Report (English)</title>
+  <style>
+    :root {
+      --bg: #eff5f7;
+      --panel: #ffffff;
+      --ink: #18242d;
+      --muted: #5f6d78;
+      --line: #d8e2e8;
+      --accent: #145c69;
+      --accent-dark: #0c3d45;
+      --hero-a: #145c69;
+      --hero-b: #213b63;
+      --soft: #eaf5f6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Georgia", "Times New Roman", serif;
+      color: var(--ink);
+      line-height: 1.72;
+      background:
+        radial-gradient(circle at top left, rgba(20, 92, 105, 0.10), transparent 30%),
+        linear-gradient(180deg, #f8fbfc 0%, var(--bg) 100%);
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 30px 18px 56px;
+    }
+    .hero {
+      background: linear-gradient(135deg, var(--hero-a), var(--hero-b));
+      color: #fff;
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 14px 34px rgba(24, 36, 45, 0.18);
+      margin-bottom: 18px;
+    }
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 1.95rem;
+      line-height: 1.15;
+    }
+    .hero p {
+      margin: 0;
+      font-size: 1rem;
+      opacity: 0.96;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 16px;
+      box-shadow: 0 5px 18px rgba(24, 36, 45, 0.05);
+    }
+    h2 {
+      margin: 0 0 14px;
+      font-size: 1.24rem;
+      color: var(--accent-dark);
+      border-left: 4px solid var(--accent);
+      padding-left: 10px;
+    }
+    p {
+      margin: 10px 0;
+      text-align: justify;
+    }
+    .meta {
+      display: grid;
+      grid-template-columns: 190px 1fr;
+      gap: 8px 14px;
+    }
+    .meta dt {
+      color: var(--accent-dark);
+      font-weight: 700;
+    }
+    .meta dd {
+      margin: 0;
+    }
+    .note {
+      margin-top: 14px;
+      padding: 12px 14px;
+      background: var(--soft);
+      border-left: 4px solid var(--accent);
+      color: #21424a;
+    }
+    .small {
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+    a { color: var(--accent); }
+    code {
+      background: #eef7f8;
+      border: 1px solid #d4e8eb;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 0.92em;
+    }
+    @media (max-width: 760px) {
+      .meta {
+        grid-template-columns: 1fr;
+      }
+      .hero h1 {
+        font-size: 1.55rem;
+      }
+      .wrap {
+        padding: 18px 12px 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>Q-StaR: A Quasi-Static Routing Scheme for NoCs</h1>
+      <p>Technical report in English based on arXiv:2603.10637v1.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Paper Information</h2>
+      <dl class="meta">
+        <dt>Title</dt>
+        <dd>Q-StaR: A Quasi-Static Routing Scheme for NoCs</dd>
+        <dt>Authors</dt>
+        <dd>Yang Zhang, Yiren Zhao, Xu Wang, Fengyuan Ren</dd>
+        <dt>Source</dt>
+        <dd><a href="https://arxiv.org/abs/2603.10637">arXiv:2603.10637</a>, version analyzed: v1</dd>
+        <dt>Date</dt>
+        <dd>March 11, 2026</dd>
+        <dt>Core Proposal</dt>
+        <dd><code>N-Rank</code> plus <code>BiDOR</code> under the broader Q-StaR framework</dd>
+      </dl>
+    </section>
+
+    <section class="panel">
+      <h2>1. Executive Summary</h2>
+      <p>
+        This paper addresses a classic tension in network-on-chip routing design: static routing is attractive because it is simple,
+        deterministic, and inexpensive to implement, but it often performs poorly under uneven traffic; adaptive routing can improve
+        load balance, yet it introduces additional complexity, state, and verification burden. Q-StaR proposes a middle-ground design
+        that preserves the runtime simplicity of deterministic routing while incorporating coarse-grained knowledge about expected load
+        distribution. Its central insight is that long-term traffic behavior in a NoC is largely shaped by topology and workload traffic
+        distribution, both of which are more stable than instantaneous congestion and can therefore be processed offline.
+      </p>
+      <p>
+        The framework consists of two components. <code>N-Rank</code> extracts a node-level estimate of long-term load pressure through
+        an evolutionary model driven by the topology and traffic matrix. <code>BiDOR</code> then selects, for each source-destination
+        pair, the lower-cost route between the two dimension-order minimal paths, XY and YX, using the precomputed node weights.
+        These route choices are stored as bitmaps and applied at runtime with negligible control overhead. In simulation, the approach
+        substantially improves performance over conventional XY routing, including a reported 42.9% throughput gain under uniform
+        traffic and dramatic reductions in average and maximum latency under a realistic workload.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>2. Introduction</h2>
+      <p>
+        Networks-on-chip form the communication substrate of modern system-on-chip platforms, interconnecting processor cores,
+        accelerators, memory interfaces, and I/O components. In commercial and research systems alike, the two-dimensional mesh remains
+        a dominant topology because it aligns naturally with physical layout constraints and offers regularity in implementation. On
+        top of this topology, dimension-order routing has long been favored because of its low hardware cost, analyzable behavior,
+        deterministic packet ordering, and straightforward deadlock avoidance.
+      </p>
+      <p>
+        The problem is that such deterministic routing mechanisms make path decisions without considering actual traffic distribution.
+        Under skewed or hotspot-heavy communication patterns, traffic converges on a small subset of routers and channels, causing
+        persistent imbalance. This degrades throughput and inflates latency even when sufficient path diversity exists in the topology.
+        Prior work has attempted to address this through oblivious or adaptive routing. Oblivious methods distribute packets across
+        multiple candidate paths, but they do so without awareness of actual or predicted load and may therefore introduce unnecessary
+        detours. Adaptive methods use runtime feedback to steer traffic around congestion, yet they require more complex control logic,
+        additional state collection, and stronger support for deadlock freedom and out-of-order handling.
+      </p>
+      <p>
+        The authors motivate Q-StaR by observing that runtime load is not arbitrary. Rather, it exhibits a long-term structure induced
+        by the underlying topology and the traffic matrix generated by the workload. In many SoC settings, those factors are either
+        known at design time, predictable from application behavior, or can be profiled at a coarse timescale. The research question,
+        therefore, is whether routing can exploit this quasi-static information to obtain much of the benefit of adaptive routing
+        without incurring its full runtime complexity. Q-StaR is presented as an affirmative answer to that question.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>3. Key Methods</h2>
+      <p>
+        Q-StaR is built around the decomposition of routing into an offline inference phase and a lightweight online execution phase.
+        The first component, <code>N-Rank</code>, estimates the long-term tendency of each node to become heavily loaded. It takes as
+        input the topology and a traffic matrix in which each element expresses the fraction of traffic sent from a source node to a
+        destination node. The method introduces an evolutionary model in which traffic is conceptually injected into the network,
+        transferred among nodes according to transition probabilities, and drained at destinations. Across this iterative process,
+        each node accumulates an NR-weight, <code>w_NR</code>, representing its expected long-term exposure to load.
+      </p>
+      <p>
+        The transition and draining probabilities are not chosen heuristically. Instead, they are derived from a possibility analysis:
+        for each channel, the method considers which source-destination pairs could traverse that channel without taking detours.
+        The aggregate traffic mass of those feasible pairs defines how likely the channel is to be used. In this way, N-Rank embeds a
+        compact model of spatial traffic pressure without needing runtime sensing. The model is especially effective because it does not
+        attempt to predict every instantaneous fluctuation; it seeks only the dominant structural trend of load concentration.
+      </p>
+      <p>
+        The second component, <code>BiDOR</code>, uses these node weights to make route choices. For each source-destination pair,
+        the algorithm compares the two deterministic minimal routes available in a 2D mesh, namely XY and YX, and computes the sum of
+        <code>w_NR</code> values along each path. The route with the lower cumulative cost is selected. Because the underlying weights
+        change only when the quasi-static traffic estimate changes, the chosen route can be precomputed offline and stored as a bitmap
+        indexed by destination. Runtime routing thus collapses to a simple lookup, while separate virtual channels isolate XY-routed
+        and YX-routed traffic to preserve deadlock freedom.
+      </p>
+      <p>
+        The reason this design works is that it couples low-overhead route selection with a richer notion of expected congestion than
+        pure DOR provides. Rather than reacting to noise in instantaneous congestion measurements, Q-StaR steers traffic away from
+        structurally overloaded regions in advance. This gives it a meaningful load-balancing capability while retaining the practical
+        properties that make static routing attractive in chip-scale environments.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>4. Key Results</h2>
+      <p>
+        The evaluation is conducted in BookSim2, a cycle-accurate NoC simulator. The baseline experimental platform is a 5×5 2D mesh
+        with 20 edge I/O ports, wormhole flow control, 64-flit input buffers, two virtual channels, and a base latency of two cycles
+        per hop. Q-StaR is compared against representative deterministic, oblivious, and adaptive routing schemes, specifically XY,
+        O1Turn, Valiant, ROMM, and Odd-Even. The study reports throughput, latency, load coefficient of variation (LCV), and the cost
+        of packet reordering through a virtual reorder-buffer model.
+      </p>
+      <p>
+        Under synthetic traffic, the paper first revisits a simplified case study to show that N-Rank accurately captures the trend of
+        runtime load distribution and that BiDOR reduces imbalance when routing decisions are made against the predicted hotspots.
+        Across standard traffic patterns such as uniform, shuffle, permutation, and overturn, the most prominent result is that under
+        uniform traffic, BiDOR delivers 42.9% higher throughput than conventional XY routing. The paper also argues that BiDOR remains
+        competitive with the adaptive Odd-Even scheme and can even behave more robustly in adverse patterns such as overturn traffic,
+        where purely local adaptivity may become less effective.
+      </p>
+      <p>
+        The realistic workload experiment is based on traced switch-port traffic from a leaf switch in an ns-3 simulated Clos network.
+        In this setting, throughput is not the primary metric because all workloads finish within finite time; latency and load balance
+        become more informative. The reported results are substantial: compared with XY routing, average latency drops from 149.6 to
+        20.4 cycles, corresponding to an 86.4% reduction, while maximum latency falls from 572 to 27 cycles, corresponding to a 95.3%
+        reduction. The authors further emphasize that Q-StaR avoids much of the reordering overhead seen in more dynamic schemes because
+        route choices are quasi-static rather than continuously changing.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>5. Conclusion</h2>
+      <p>
+        The main finding of the paper is that a large portion of the benefit traditionally associated with adaptive routing can be
+        recovered through a carefully designed quasi-static policy. By extracting long-term load trends from topology and traffic
+        distribution, Q-StaR improves load balance and latency while preserving the implementation simplicity of dimension-order
+        routing. This result is significant because it suggests that routing quality in NoCs does not have to be tied exclusively to
+        fine-grained runtime adaptivity.
+      </p>
+      <p>
+        The broader implication is that future NoC research may profit from incorporating offline workload knowledge more explicitly into
+        network-control design. If application phases, communication graphs, or deployment-specific traffic statistics can be profiled
+        accurately, then routing, arbitration, or even topology management policies may be specialized in similarly lightweight ways.
+        Q-StaR therefore contributes not only a concrete routing algorithm, but also a broader design philosophy for hardware-conscious
+        networking systems.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>6. Insights and Critical Analysis</h2>
+      <p>
+        A key strength of the paper lies in its framing. Instead of treating routing exclusively as a reactive control problem, the
+        authors formulate it as a prediction-and-compilation problem over a slower timescale. This is an important conceptual shift.
+        In many SoCs, traffic is neither fully random nor fully adversarial; it exhibits recurring structure tied to software behavior,
+        placement, and topology. Q-StaR leverages that structure more effectively than classic deterministic routing, yet without
+        inheriting the full complexity of highly adaptive hardware.
+      </p>
+      <p>
+        The most notable innovation is the separation between load inference and route execution. N-Rank provides a compact and
+        architecture-friendly abstraction of future congestion, while BiDOR converts that abstraction into a deterministic route map.
+        This separation gives the proposal strong engineering plausibility. It also explains why the paper achieves a favorable balance
+        among simplicity, deadlock freedom, and low reordering overhead. In an environment where verification and timing closure are
+        expensive, those properties matter almost as much as raw throughput.
+      </p>
+      <p>
+        At the same time, the paper’s effectiveness depends critically on the stability and accuracy of the traffic matrix. If an SoC
+        experiences rapid phase changes, multi-tenant interference, or highly bursty communication that deviates sharply from profiled
+        behavior, then the precomputed weights may become stale. The paper acknowledges traffic predictability as a premise, but it does
+        not deeply quantify sensitivity to misprediction. That omission is important because it defines the boundary between workloads
+        for which quasi-static routing is compelling and workloads for which online adaptivity remains necessary.
+      </p>
+      <p>
+        For future research, this work opens several directions. One is hybridization: a quasi-static routing policy could serve as a
+        low-cost prior, while a lightweight runtime correction mechanism handles rare deviations. Another is broader generalization to
+        topologies beyond the evaluated mesh setting, or to systems with heterogeneous routers and links. A third direction is formal
+        study of update cadence and policy-refresh cost, which would help connect the algorithm more directly to deployment realities.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>7. Critique</h2>
+      <p>
+        The paper is strongest when it argues for a design point that is both technically meaningful and practically deployable. The
+        methods are clearly structured, the rationale for the evolutionary model is coherent, and the experimental results support the
+        claim that deterministic routing can be materially improved by injecting long-term workload knowledge. In particular, the paper
+        succeeds in showing that the contribution is more than a small heuristic tweak to XY routing; it is an argument for a broader
+        quasi-static optimization strategy.
+      </p>
+      <p>
+        Nevertheless, the empirical study remains somewhat narrow for such a general claim. The evaluation centers on a 5×5 mesh and a
+        single realistic switch-trace scenario. While the reported gains are impressive, the paper would be stronger with a systematic
+        analysis of robustness under traffic prediction error, larger network scales, more varied real workloads, and explicit offline
+        recomputation costs. Likewise, comparison against more recent or more implementation-aware adaptive baselines would sharpen the
+        claim that Q-StaR achieves a superior complexity-performance tradeoff.
+      </p>
+      <p>
+        Overall, my assessment is favorable. The paper presents a clean idea with credible systems intuition and meaningful empirical
+        gains. Its main weakness is not conceptual fragility, but rather the limited scope of evidence around generality and sensitivity.
+        Even so, it offers a persuasive and useful contribution to NoC routing research.
+      </p>
+    </section>
+
+    <section class="panel">
+      <p class="small">
+        Source: <a href="https://arxiv.org/abs/2603.10637">Q-StaR: A Quasi-Static Routing Scheme for NoCs, arXiv:2603.10637</a>.
+      </p>
+    </section>
+  </main>
+</body>
+</html>
