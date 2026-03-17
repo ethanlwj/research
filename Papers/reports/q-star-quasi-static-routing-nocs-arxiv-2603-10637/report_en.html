@@ -364,6 +364,18 @@
               exactly the information a quasi-static scheme needs.
             </li>
           </ul>
+          <p>
+            In more concrete terms, N-Rank tries to answer a predictive question: if traffic continues to follow the observed
+            communication pattern, which routers are most likely to accumulate forwarding pressure over time? Instead of measuring
+            congestion online, it derives this answer from topology connectivity and from the probability that a source-destination
+            pair could traverse a given channel without detouring. That design choice is important because it lets the method encode
+            long-term spatial pressure while avoiding expensive runtime monitoring logic.
+          </p>
+          <p>
+            The resulting <code>w_NR</code> values are therefore not instantaneous queue measurements. They are a compact estimate of
+            which parts of the mesh are structurally vulnerable to congestion. This distinction explains why the method remains simple:
+            it does not seek to react to every fluctuation, only to bias routing away from repeatedly overloaded regions.
+          </p>
         </div>
         <div>
           <h3>BiDOR</h3>
@@ -380,6 +392,18 @@
               deterministic behavior while avoiding structurally congested regions.
             </li>
           </ul>
+          <p>
+            BiDOR is the execution layer of Q-StaR. Once N-Rank assigns a relative cost to each node, BiDOR evaluates the two
+            dimension-order minimal paths available in a 2D mesh and chooses the one with lower cumulative pressure. This is a very
+            restrained form of adaptivity: the route is not selected dynamically per packet based on transient congestion, but is
+            still more informed than fixed XY routing because it incorporates topology-aware load estimates.
+          </p>
+          <p>
+            The paper also strengthens this design with two isolated virtual channels, one associated with XY-routed traffic and one
+            with YX-routed traffic. That decision is technically meaningful because it preserves deadlock freedom while keeping route
+            selection simple. As a result, BiDOR inherits much of the predictability of deterministic routing, but with a better
+            chance of steering flows away from recurrent hotspots.
+          </p>
         </div>
       </div>
       <div class="callout">
@@ -420,6 +444,25 @@
           </tr>
         </tbody>
       </table>
+      <p>
+        The evaluation methodology is fairly standard for NoC studies, but it is broad enough to support the paper’s central claim.
+        The authors compare Q-StaR not only against plain deterministic routing, but also against oblivious and adaptive baselines.
+        This matters because the paper is not merely claiming an incremental improvement over XY; it is arguing for a favorable
+        complexity-performance tradeoff across several routing philosophies.
+      </p>
+      <p>
+        In the synthetic traffic study, the most persuasive evidence is that BiDOR consistently improves load distribution without
+        requiring runtime congestion feedback. The reported 42.9% throughput improvement over XY under uniform traffic is especially
+        notable because uniform traffic is often treated as a benign pattern, not an extreme adversarial case. The results therefore
+        suggest that even under common workloads, there is still meaningful performance left on the table when routing ignores
+        long-term traffic structure.
+      </p>
+      <p>
+        The realistic workload experiment is even more consequential. Here the paper shifts emphasis from peak throughput to latency,
+        which is appropriate because practical application traces often expose queuing behavior more clearly than synthetic rates do.
+        The drops from 149.6 to 20.4 cycles in average latency and from 572 to 27 cycles in maximum latency indicate that the method
+        is particularly effective at suppressing persistent hotspots and tail behavior, not just improving mean-case utilization.
+      </p>
       <p>
         These results matter because they show the proposal is not merely a theoretical compromise. It preserves much of the
         implementation profile of deterministic routing while delivering performance closer to adaptive schemes.
