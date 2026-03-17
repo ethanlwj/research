@@ -194,6 +194,23 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 16px;
     }
+    .method-block {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      background: linear-gradient(180deg, #ffffff, #fbfdfd);
+    }
+    .equation {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #f5fafb;
+      border: 1px solid #dbecee;
+      font-family: "Times New Roman", "Georgia", serif;
+      font-size: 0.96rem;
+      color: var(--accent-dark);
+      overflow-x: auto;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -309,6 +326,11 @@
           complexity and runtime overhead. The authors propose a middle-ground approach in which long-term load tendencies are computed
           offline and then used to drive deterministic routing choices online.
         </p>
+        <p>
+          The deeper significance of the paper is that it challenges the assumption that better routing quality must always come from
+          richer online feedback. Instead, it argues that if topology and traffic structure are sufficiently stable, then a carefully
+          constructed offline prior can achieve a meaningful portion of the same benefit at much lower implementation cost.
+        </p>
       </div>
       <ul class="bullet-list">
         <li>
@@ -324,6 +346,11 @@
           quasi-static workload knowledge can be operationally valuable in NoC design.
         </li>
       </ul>
+      <p>
+        In that sense, the paper is both an algorithmic contribution and a design-space argument. It does not merely introduce a new
+        route-selection heuristic; it also makes the case that quasi-static information can serve as a first-class control signal in
+        on-chip networks.
+      </p>
     </section>
 
     <section class="panel section">
@@ -344,12 +371,17 @@
           decisions more intelligently than plain XY routing.
         </li>
       </ul>
+      <p>
+        This is a realistic motivation in many SoC deployments. Multi-core programs, accelerator pipelines, and switch-like traffic
+        patterns often exhibit recurring communication structure across long intervals, making them amenable to offline estimation even
+        when short-timescale congestion remains noisy and difficult to track precisely.
+      </p>
     </section>
 
     <section class="panel section">
       <h2>3. Key Methods</h2>
       <div class="split">
-        <div>
+        <div class="method-block">
           <h3>N-Rank</h3>
           <ul class="bullet-list">
             <li>
@@ -365,19 +397,35 @@
             </li>
           </ul>
           <p>
-            In more concrete terms, N-Rank tries to answer a predictive question: if traffic continues to follow the observed
-            communication pattern, which routers are most likely to accumulate forwarding pressure over time? Instead of measuring
-            congestion online, it derives this answer from topology connectivity and from the probability that a source-destination
-            pair could traverse a given channel without detouring. That design choice is important because it lets the method encode
-            long-term spatial pressure while avoiding expensive runtime monitoring logic.
+            The core idea of N-Rank is to infer persistent load exposure rather than observe instantaneous congestion. The paper first
+            initializes each node with an injection weight based on the amount of traffic sourced from that node:
           </p>
+          <div class="equation">w_n^0 = sum_{n' in N} T_{n,n'}</div>
           <p>
-            The resulting <code>w_NR</code> values are therefore not instantaneous queue measurements. They are a compact estimate of
-            which parts of the mesh are structurally vulnerable to congestion. This distinction explains why the method remains simple:
-            it does not seek to react to every fluctuation, only to bias routing away from repeatedly overloaded regions.
+            It then iteratively propagates this weight through the topology. A node receives traffic from its upstream neighbors
+            according to transfer probability and accumulates the amount of traffic it has seen into an NR-weight. In simplified form,
+            the update rule is:
+          </p>
+          <div class="equation">
+            w_n &lt;- sum_{u in U_n} w_u p_{u,n}(1 - p^drn_{u,n})<br/>
+            w_n^NR &lt;- w_n^NR + sum_{u in U_n} w_u p_{u,n}
+          </div>
+          <p>
+            The logic behind the probabilities is central. The transfer probability <code>p_{u,n}</code> depends on how much traffic
+            could plausibly traverse channel <code>(u,n)</code> without taking a detour, while the draining probability
+            <code>p^drn_{u,n}</code> depends on how much of that traffic would terminate at node <code>n</code>. The paper defines:
+          </p>
+          <div class="equation">
+            p_{u,n} = W_{u,n} / sum_{n' in D_u} W_{u,n'}<br/>
+            p^drn_{u,n} = W^drn_{u,n} / W_{u,n}
+          </div>
+          <p>
+            What makes N-Rank effective is that it estimates structural vulnerability to congestion, not queue occupancy at a single
+            time instant. The resulting <code>w_NR</code> values therefore summarize where forwarding pressure is likely to accumulate
+            repeatedly under the given topology and traffic matrix.
           </p>
         </div>
-        <div>
+        <div class="method-block">
           <h3>BiDOR</h3>
           <ul class="bullet-list">
             <li>
@@ -393,16 +441,22 @@
             </li>
           </ul>
           <p>
-            BiDOR is the execution layer of Q-StaR. Once N-Rank assigns a relative cost to each node, BiDOR evaluates the two
-            dimension-order minimal paths available in a 2D mesh and chooses the one with lower cumulative pressure. This is a very
-            restrained form of adaptivity: the route is not selected dynamically per packet based on transient congestion, but is
-            still more informed than fixed XY routing because it incorporates topology-aware load estimates.
+            BiDOR is the route-selection mechanism that consumes the N-Rank weights. For each source-destination pair, it compares the
+            two minimal dimension-order routes available in a 2D mesh, namely XY and YX, and chooses the one with the lower total
+            accumulated node weight:
+          </p>
+          <div class="equation">
+            b_{s,d} = arg min_{b in {0,1}} sum_{n in R^b_{s,d}} w_n^NR
+          </div>
+          <p>
+            This is a narrow but useful form of adaptation. The route is not chosen dynamically on a packet-by-packet basis using
+            transient queue readings, but it is still more intelligent than fixed XY routing because it reflects the expected load
+            distribution of the network. In other words, BiDOR turns a predictive load signal into a deterministic path choice.
           </p>
           <p>
-            The paper also strengthens this design with two isolated virtual channels, one associated with XY-routed traffic and one
-            with YX-routed traffic. That decision is technically meaningful because it preserves deadlock freedom while keeping route
-            selection simple. As a result, BiDOR inherits much of the predictability of deterministic routing, but with a better
-            chance of steering flows away from recurrent hotspots.
+            The implementation strategy is equally important. The paper stores these route choices as bitmaps for each source node,
+            making runtime selection a simple destination-indexed lookup. Two virtual channels isolate XY-routed and YX-routed traffic,
+            preserving deadlock freedom and reducing the reordering problems that typically accompany more dynamic routing behavior.
           </p>
         </div>
       </div>
@@ -458,6 +512,12 @@
         long-term traffic structure.
       </p>
       <p>
+        The supporting metrics matter as well. By reporting load coefficient of variation and reordering cost, the paper shows that
+        Q-StaR is not improving one metric at the expense of another hidden systems cost. Lower LCV implies better spatial load
+        distribution, while lower reorder overhead strengthens the claim that quasi-static routing can retain one of the practical
+        advantages of deterministic schemes.
+      </p>
+      <p>
         The realistic workload experiment is even more consequential. Here the paper shifts emphasis from peak throughput to latency,
         which is appropriate because practical application traces often expose queuing behavior more clearly than synthetic rates do.
         The drops from 149.6 to 20.4 cycles in average latency and from 572 to 27 cycles in maximum latency indicate that the method
@@ -466,6 +526,11 @@
       <p>
         These results matter because they show the proposal is not merely a theoretical compromise. It preserves much of the
         implementation profile of deterministic routing while delivering performance closer to adaptive schemes.
+      </p>
+      <p>
+        Taken together, the empirical evidence supports the authors’ broader claim that quasi-static information is sufficiently
+        informative to guide useful route selection. The work remains simulation-based, but the mix of throughput, latency, load-balance,
+        and reorder observations makes the argument stronger than a one-metric evaluation would have.
       </p>
     </section>
 
@@ -485,6 +550,11 @@
           online correction coexist.
         </li>
       </ul>
+      <p>
+        Even if future work changes the exact algorithmic details, this broader conclusion is likely to persist: in NoC routing, there
+        is meaningful design space between rigid fixed routing and expensive full adaptivity, and Q-StaR demonstrates one credible way
+        to occupy that middle ground.
+      </p>
     </section>
 
     <section class="panel section">
@@ -507,6 +577,11 @@
           prior but adds a lightweight runtime correction layer for deviations and workload drift.
         </li>
       </ul>
+      <p>
+        This is why the paper is strongest as an architectural argument. It shows that the space between deterministic and adaptive
+        routing is richer than the conventional binary framing suggests, and that intermediate designs may be especially attractive in
+        real hardware deployments.
+      </p>
     </section>
 
     <section class="panel section">
@@ -525,6 +600,11 @@
           analysis, not weakness of the core idea.
         </li>
       </ul>
+      <p>
+        My overall assessment remains positive. The central intuition is strong, the method is well matched to practical hardware
+        concerns, and the experiments are directionally convincing. The main shortcoming is not conceptual weakness, but limited
+        evidence about robustness and generality.
+      </p>
     </section>
 
     <section class="panel section">
