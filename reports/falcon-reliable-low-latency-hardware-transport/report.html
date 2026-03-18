@@ -1,0 +1,1101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Falcon: A Reliable, Low Latency Hardware Transport — Bilingual Technical Report</title>
+  <style>
+    :root {
+      --bg: #071018;
+      --bg-soft: #0d1824;
+      --panel: rgba(14, 24, 36, 0.92);
+      --panel-2: rgba(18, 31, 45, 0.92);
+      --ink: #e8f0f7;
+      --muted: #9db2c6;
+      --line: rgba(136, 171, 204, 0.22);
+      --accent: #5ed0ff;
+      --accent-2: #8cf0c7;
+      --accent-3: #ffbf69;
+      --accent-4: #ff7b72;
+      --glow: rgba(94, 208, 255, 0.18);
+      --shadow: rgba(0, 0, 0, 0.34);
+      --font-body: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      --font-ui: "Avenir Next", "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 17px/1.72 var(--font-body);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(94, 208, 255, 0.12), transparent 28%),
+        radial-gradient(circle at 85% 8%, rgba(140, 240, 199, 0.12), transparent 24%),
+        linear-gradient(180deg, #06111a 0%, #071018 38%, #09131d 100%);
+    }
+    a { color: var(--accent); }
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 18px 72px;
+    }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 30px;
+      border-radius: 24px;
+      background:
+        linear-gradient(145deg, rgba(14, 31, 48, 0.98), rgba(9, 21, 33, 0.96)),
+        linear-gradient(90deg, rgba(94, 208, 255, 0.18), transparent);
+      border: 1px solid rgba(94, 208, 255, 0.22);
+      box-shadow: 0 24px 60px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -6% -30% auto;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(94, 208, 255, 0.14), transparent 68%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      font: 700 0.78rem/1 var(--font-ui);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent-2);
+      margin-bottom: 12px;
+    }
+    h1, h2, h3 {
+      margin: 0;
+      line-height: 1.2;
+    }
+    h1 {
+      max-width: 980px;
+      font-size: 2.3rem;
+      margin-bottom: 14px;
+    }
+    .subtitle {
+      max-width: 960px;
+      color: #cce0f3;
+      font-size: 1.03rem;
+      margin-bottom: 18px;
+    }
+    .meta-grid,
+    .result-grid,
+    .insight-grid,
+    .chart-grid,
+    .critique-grid {
+      display: grid;
+      gap: 14px;
+    }
+    .meta-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .meta-card,
+    .panel,
+    .metric-card,
+    .insight-card,
+    .critique-card {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+    }
+    .meta-card {
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .meta-k {
+      display: block;
+      margin-bottom: 5px;
+      font: 700 0.75rem/1 var(--font-ui);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #9bd7ef;
+    }
+    .meta-v { color: #eef6ff; }
+    .panel {
+      margin-top: 18px;
+      padding: 24px;
+      background:
+        linear-gradient(180deg, rgba(18, 31, 45, 0.96), rgba(11, 21, 31, 0.96));
+    }
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    .section-head h2 {
+      font-size: 1.44rem;
+      color: #f2f8fd;
+    }
+    .section-note {
+      color: var(--muted);
+      font-size: 0.92rem;
+      max-width: 520px;
+      text-align: right;
+    }
+    p {
+      margin: 0 0 14px;
+    }
+    .lede {
+      font-size: 1.05rem;
+      color: #dbeaf7;
+    }
+    .lang-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 14px;
+    }
+    .lang-card {
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      padding: 18px;
+    }
+    .lang-label {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font: 700 0.77rem/1 var(--font-ui);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #06111a;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+    .callout {
+      margin: 16px 0 2px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--accent-3);
+      border-radius: 12px;
+      background: linear-gradient(90deg, rgba(255, 191, 105, 0.12), rgba(255,255,255,0.02));
+      color: #f5ead7;
+    }
+    .result-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 16px;
+    }
+    .metric-card {
+      padding: 16px;
+      background: linear-gradient(180deg, rgba(16, 32, 48, 0.98), rgba(10, 21, 33, 0.98));
+    }
+    .metric-title {
+      color: var(--muted);
+      font: 700 0.82rem/1.3 var(--font-ui);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .metric-value {
+      font: 700 2rem/1.05 var(--font-ui);
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+    .metric-desc {
+      color: #d4e3f0;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+    }
+    .bar {
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .bar > span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 22px var(--glow);
+    }
+    .subsection {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(136, 171, 204, 0.15);
+    }
+    .subsection:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+      margin-top: 0;
+    }
+    h3 {
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+      color: var(--accent-2);
+    }
+    .mini-diagram {
+      margin: 14px 0 2px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(94, 208, 255, 0.18);
+      background: linear-gradient(180deg, rgba(7, 20, 31, 0.95), rgba(12, 26, 39, 0.95));
+    }
+    .flow-row {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .flow-node {
+      padding: 10px 8px;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 0.88rem;
+      color: #eaf6ff;
+      border: 1px solid rgba(140, 240, 199, 0.18);
+      background: rgba(255,255,255,0.03);
+    }
+    .chart-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 14px;
+    }
+    .chart {
+      padding: 18px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .chart h4 {
+      margin: 0 0 10px;
+      color: #edf7ff;
+      font-size: 1rem;
+      line-height: 1.3;
+    }
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .caption {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.91rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 0.95rem;
+    }
+    th, td {
+      padding: 11px 12px;
+      text-align: left;
+      vertical-align: top;
+      border: 1px solid var(--line);
+    }
+    th {
+      color: #eff7ff;
+      background: rgba(94, 208, 255, 0.1);
+    }
+    td { color: #dbe8f4; }
+    .insight-grid,
+    .critique-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 14px;
+    }
+    .insight-card,
+    .critique-card {
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .pill {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+      font: 700 0.76rem/1 var(--font-ui);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .pill.good {
+      background: rgba(140, 240, 199, 0.15);
+      color: var(--accent-2);
+    }
+    .pill.bad {
+      background: rgba(255, 123, 114, 0.12);
+      color: #ffaba3;
+    }
+    .source-list {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      color: #dbe8f4;
+    }
+    .source-list li { margin-bottom: 8px; }
+    .footer {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 0.91rem;
+    }
+    @media (max-width: 980px) {
+      .meta-grid,
+      .result-grid,
+      .chart-grid,
+      .insight-grid,
+      .critique-grid,
+      .lang-grid {
+        grid-template-columns: 1fr;
+      }
+      .section-head {
+        display: block;
+      }
+      .section-note {
+        max-width: none;
+        text-align: left;
+        margin-top: 6px;
+      }
+      .flow-row {
+        grid-template-columns: 1fr;
+      }
+      h1 { font-size: 1.86rem; }
+    }
+    @media (max-width: 640px) {
+      .wrap { padding: 14px 12px 40px; }
+      .hero, .panel { padding: 18px; }
+      h1 { font-size: 1.58rem; }
+      body { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Bilingual Technical Report</div>
+      <h1>Falcon: A Reliable, Low Latency Hardware Transport</h1>
+      <p class="subtitle">
+        An English + Simplified Chinese technical report on Falcon’s architecture, reliability model, congestion control,
+        multipathing, hardware scalability, and application-level implications for datacenter networking.
+      </p>
+      <div class="meta-grid">
+        <div class="meta-card">
+          <span class="meta-k">Paper</span>
+          <span class="meta-v"><a href="https://praveenk.io/papers/falcon.pdf">Public PDF</a></span>
+        </div>
+        <div class="meta-card">
+          <span class="meta-k">Venue</span>
+          <span class="meta-v">ACM SIGCOMM 2025</span>
+        </div>
+        <div class="meta-card">
+          <span class="meta-k">Authors</span>
+          <span class="meta-v">Arjun Singhvi et al., Google LLC</span>
+        </div>
+        <div class="meta-card">
+          <span class="meta-k">Core Thesis</span>
+          <span class="meta-v">General-purpose hardware transport over lossy Ethernet without PFC</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>1. TL;DR</h2>
+        <div class="section-note">Executive summary and at-a-glance quantitative takeaways.</div>
+      </div>
+      <div class="lang-grid">
+        <article class="lang-card">
+          <span class="lang-label">English</span>
+          <p class="lede">
+            Falcon is a hardware transport for datacenter Ethernet that aims to close the long-standing gap between
+            specialized RDMA-style performance and the operational realities of general-purpose, lossy, multipath networks.
+            The paper’s central contribution is not merely a faster NIC datapath, but a transport architecture that jointly
+            combines multi-ULP support, robust loss recovery, delay-based congestion control, congestion-aware multipathing,
+            and hardware resource admission.
+          </p>
+          <p>
+            The significance of Falcon is that it reframes hardware transport as a <em>systems co-design problem</em> rather
+            than a narrow packet-processing problem. By separating ULP mapping, transaction semantics, packet delivery, and
+            a programmable adaptive engine, the design preserves line-rate hardware execution while still allowing algorithmic
+            evolution in congestion control and path selection. In effect, Falcon argues that high performance and operational
+            flexibility are not mutually exclusive if the hardware/software boundary is drawn carefully.
+          </p>
+        </article>
+        <article class="lang-card">
+          <span class="lang-label">简体中文</span>
+          <p class="lede">
+            Falcon 是一种面向数据中心以太网的硬件传输层，其目标是在不依赖 PFC 等特殊交换机特性的前提下，
+            同时获得接近专用 RDMA 网络的性能与通用有损、多路径网络环境下的可部署性。论文的核心贡献并不只是
+            “更快的 NIC”，而是提出了一套联合支持多 ULP、强鲁棒丢包恢复、基于时延的拥塞控制、拥塞感知多路径
+            以及硬件资源准入控制的整体传输架构。
+          </p>
+          <p>
+            Falcon 的重要性在于，它把硬件传输设计重新定义为一个<em>系统协同设计问题</em>，而不是单纯的数据包处理
+            问题。通过将 ULP 映射、事务语义、分组投递和可编程自适应引擎分层，Falcon 一方面保持了线速硬件执行，
+            另一方面又保留了拥塞控制和路径选择算法持续演化的空间。论文传达出的关键信息是：只要硬件与软件边界
+            划分得当，高性能与运维灵活性可以同时实现。
+          </p>
+        </article>
+      </div>
+
+      <div class="callout">
+        At a glance / 一眼看懂: Falcon’s evaluation claims up to <strong>8x lower completion times</strong> than CX-7 RoCE under congestion,
+        <strong>up to 65% higher goodput</strong> under lossy conditions, and <strong>120 Mops/s</strong> at 8-byte RDMA writes with as few as 12 QPs.
+      </div>
+
+      <div class="result-grid">
+        <div class="metric-card">
+          <div class="metric-title">Congested Completion Time</div>
+          <div class="metric-value">8x lower</div>
+          <div class="metric-desc">The paper positions Falcon against CX-7 RoCE and argues that faster in-band control loops keep completion times much closer to ideal under congestion.</div>
+          <div class="bar"><span style="width:88%"></span></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">Lossy-Network Goodput</div>
+          <div class="metric-value">+65%</div>
+          <div class="metric-desc">Precise retransmission and out-of-order acceptance let Falcon sustain throughput where RoCE variants degrade sharply after loss and reordering.</div>
+          <div class="bar"><span style="width:72%"></span></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">Peak Operation Rate</div>
+          <div class="metric-value">120 Mops/s</div>
+          <div class="metric-desc">Hardware offload is not limited to bulk bandwidth; Falcon also targets high operation-rate workloads such as storage and fine-grained RPC-like exchanges.</div>
+          <div class="bar"><span style="width:92%"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>2. Introduction</h2>
+        <div class="section-note">Background, problem statement, and motivation.</div>
+      </div>
+      <div class="lang-grid">
+        <article class="lang-card">
+          <span class="lang-label">English</span>
+          <p>
+            The paper begins from a practical contradiction in modern datacenters. Emerging workloads such as distributed
+            training, storage disaggregation, high-performance computing, and latency-sensitive analytics all need the low CPU
+            overhead and high throughput of hardware transports. Yet the dominant deployed hardware transport, RoCE, remains
+            best suited to constrained environments that either assume losslessness through Priority Flow Control or depend on
+            carefully provisioned backend fabrics.
+          </p>
+          <p>
+            This mismatch matters because production datacenters are increasingly heterogeneous. Operators want a single
+            transport substrate that can support RDMA, NVMe, mixed tenant traffic, path diversity, and occasional loss or
+            reordering without collapsing into performance cliffs. The paper’s problem statement is therefore sharper than
+            “make RDMA faster”: it asks whether a hardware transport can preserve hardware efficiency while also behaving well
+            in <em>general-purpose Ethernet</em>, including lossy and multipath conditions.
+          </p>
+          <p>
+            Falcon’s motivation follows directly from the shortcomings the authors identify in RoCE: incomplete modern loss
+            recovery, weak native support for multipathing, sluggish congestion response due to add-on control loops, and
+            firmware-handled exceptions that create scalability hazards. Falcon is proposed as a clean-slate transport to
+            restore predictability under realistic network stress.
+          </p>
+        </article>
+        <article class="lang-card">
+          <span class="lang-label">简体中文</span>
+          <p>
+            论文从现代数据中心中的一个现实矛盾出发：分布式训练、存储解耦、高性能计算以及时延敏感型分析任务，
+            都需要硬件传输所带来的低 CPU 开销和高吞吐；但当前主流的硬件传输方案 RoCE 更适合受约束的部署环境，
+            通常依赖 PFC 提供近似无损网络，或者依赖经过精细规划的专用后端网络。
+          </p>
+          <p>
+            这个矛盾的关键在于，生产环境数据中心越来越异构。运维者希望一套统一的传输底座既能支持 RDMA、
+            NVMe 和混合租户流量，又能容忍路径多样性、偶发丢包和乱序，并且不会在压力下出现性能断崖。
+            因此，这篇论文提出的问题并不是简单的“如何让 RDMA 更快”，而是：是否存在一种硬件传输，可以在保持
+            硬件效率的同时，仍然适应<em>通用以太网</em>中的有损、多路径和共享网络条件。
+          </p>
+          <p>
+            Falcon 的研究动机直接来自作者对 RoCE 的系统性批判：现代丢包恢复能力不足，缺乏原生多路径支持，
+            拥塞控制与数据通路割裂导致反馈慢，异常处理依赖固件进而引入可扩展性风险。Falcon 因而被设计为一个
+            “面向真实生产网络压力”的重新出发的硬件传输协议。
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>3. Key Methods</h2>
+        <div class="section-note">Each subsection explains the core idea, how it works, and why it works.</div>
+      </div>
+
+      <div class="subsection">
+        <h3>3.1 Layered Architecture and the Transaction Abstraction</h3>
+        <div class="lang-grid">
+          <article class="lang-card">
+            <span class="lang-label">English</span>
+            <p>
+              Falcon is organized into a ULP mapping layer, a transaction layer (TL), a packet delivery layer (PDL), and the
+              Falcon Adaptive Engine (FAE). The key method here is the use of a simple request-response transaction interface
+              between upper-layer protocols and the transport substrate. RDMA writes and sends map naturally to <em>Push</em>,
+              RDMA reads and atomics map to <em>Pull</em>, and NVMe operations are supported by composing the same primitives.
+            </p>
+            <p>
+              This works because many semantics that differ across ULPs can be localized above the common transport core,
+              while ordering, retransmission, packet scheduling, and resource management remain centralized in Falcon. The
+              design reduces feature duplication across ULP-specific hardware engines and makes multi-ULP support tractable
+              without building a separate reliable transport pipeline for every interface.
+            </p>
+            <p>
+              Why it works is largely an engineering-economics argument: if common transport machinery is factored once, the
+              NIC can support IB Verbs, NVMe, and future interfaces with lower hardware complexity while retaining a shared
+              reliability and congestion-control substrate.
+            </p>
+          </article>
+          <article class="lang-card">
+            <span class="lang-label">简体中文</span>
+            <p>
+              Falcon 由 ULP 映射层、事务层（TL）、分组投递层（PDL）以及 Falcon Adaptive Engine（FAE）组成。
+              这里最关键的方法，是在上层协议与传输底座之间引入一个简洁的请求-响应事务抽象。RDMA Write/Send
+              可以自然映射为 <em>Push</em>，RDMA Read/Atomic 映射为 <em>Pull</em>，而 NVMe 则通过同一组事务原语进行组合支持。
+            </p>
+            <p>
+              这一设计之所以有效，是因为不同 ULP 的差异化语义可以大部分收敛到公共传输核心之上，而排序、重传、
+              分组调度与资源管理则继续由 Falcon 统一实现。这样一来，NIC 不需要为每一种接口都实现一套独立的可靠
+              传输流水线，从而显著降低多 ULP 支持的硬件复杂度。
+            </p>
+            <p>
+              从工程经济性的角度看，这一方法的本质价值在于“公共机制一次实现，多协议重复复用”。这让 Falcon
+              能在维持统一可靠性与拥塞控制底座的同时，扩展到 IB Verbs、NVMe 以及未来的新型接口。
+            </p>
+          </article>
+        </div>
+        <div class="mini-diagram">
+          <strong>Method sketch</strong>
+          <div class="flow-row">
+            <div class="flow-node">ULP Mapping<br/>RDMA / NVMe</div>
+            <div class="flow-node">Transaction Layer<br/>Push / Pull</div>
+            <div class="flow-node">Packet Delivery Layer<br/>Reliability + CC</div>
+            <div class="flow-node">FAE<br/>Algorithms</div>
+            <div class="flow-node">Ethernet Fabric<br/>Lossy + Multipath</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>3.2 Reliability: Out-of-Order Acceptance plus Bitmap SACK and RACK-TLP</h3>
+        <div class="lang-grid">
+          <article class="lang-card">
+            <span class="lang-label">English</span>
+            <p>
+              Falcon’s reliability design is a direct answer to RoCE’s weakness under loss and reordering. Receivers track
+              packet sequence numbers with bitmap-based receive windows and piggyback those bitmaps in ACKs. Senders then use
+              a RACK-style time-based heuristic together with the bitmap state to determine which packets are truly lost and
+              should be retransmitted. Tail Loss Probe is added to accelerate recovery when the tail of a burst or an ACK is lost.
+            </p>
+            <p>
+              The important design choice is that Falcon <em>accepts out-of-order packets</em> at the receiver, buffering them
+              on-NIC when needed. This is critical because multipathing and realistic Ethernet fabrics naturally induce packet
+              reordering. If the transport cannot distinguish reordering from loss, it spuriously retransmits and collapses
+              under stress.
+            </p>
+            <p>
+              The paper’s central timing relation for fabric delay estimation is also revealing:
+              <code>(t4 - t1) - (t3 - t2)</code>.
+              By carrying timestamps through ACKs, Falcon estimates fabric delay without synchronized clocks. That same
+              philosophy, namely precise in-band telemetry coupled to immediate hardware action, underlies both reliability and congestion control.
+            </p>
+          </article>
+          <article class="lang-card">
+            <span class="lang-label">简体中文</span>
+            <p>
+              Falcon 的可靠性设计，直接回应了 RoCE 在丢包和乱序下表现不佳的问题。接收端使用基于位图的接收窗口
+              跟踪包序号，并将位图随 ACK 一起返回；发送端则结合位图状态和类似 RACK 的基于时间的启发式机制，
+              判断哪些数据包是真正丢失、哪些只是乱序，从而只精确重传必要的数据包。对于突发尾部丢包或 ACK 丢失，
+              Falcon 还使用 TLP 加速恢复。
+            </p>
+            <p>
+              这里最关键的设计选择是，Falcon 在接收端允许<em>乱序包接收</em>，并在需要时利用 NIC 上的缓冲资源暂存。
+              这是因为多路径和真实以太网环境天然会引入乱序。如果传输层无法区分“乱序”和“真正丢包”，就会发生大量
+              伪重传，进而在压力下出现吞吐和尾时延崩溃。
+            </p>
+            <p>
+              论文用于估计网络织物时延的核心关系式也很重要：
+              <code>(t4 - t1) - (t3 - t2)</code>。
+              Falcon 通过 ACK 携带时间戳，在不要求时钟同步的情况下估计网络时延。这种“精确的带内测量 + 硬件快速执行”
+              的设计哲学，同时支撑了其可靠性机制与拥塞控制机制。
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>3.3 Delay-Based Dual-Window Congestion Control</h3>
+        <div class="lang-grid">
+          <article class="lang-card">
+            <span class="lang-label">English</span>
+            <p>
+              Falcon adapts Swift-style delay-based control to hardware and extends it with two windows: <code>fcwnd</code>
+              for fabric congestion and <code>ncwnd</code> for NIC-side congestion, with the effective window taken as the minimum.
+              Fabric congestion is inferred from hardware timestamps on data and ACK paths, while NIC congestion is inferred
+              from receive-buffer occupancy and returned in ACKs.
+            </p>
+            <p>
+              This dual-window structure is important because congestion in modern datacenters is not purely in-network.
+              Ordered buffering after loss, PCIe bottlenecks, IOMMU pressure, and host-memory delays can all create backpressure
+              at the NIC. A transport that reacts only to switch/fabric congestion will misdiagnose the true bottleneck and
+              overshoot into packet drops or inflated latency.
+            </p>
+            <p>
+              Why it works: Falcon integrates measurement and enforcement directly in the packet delivery path. It avoids slow,
+              out-of-band control loops and allows sub-RTT-scale adaptation to both network and endpoint pressure.
+            </p>
+          </article>
+          <article class="lang-card">
+            <span class="lang-label">简体中文</span>
+            <p>
+              Falcon 将 Swift 风格的基于时延的拥塞控制适配到硬件中，并进一步扩展为双窗口结构：
+              <code>fcwnd</code> 表示网络织物拥塞窗口，<code>ncwnd</code> 表示 NIC 侧拥塞窗口，实际允许发送的窗口取二者最小值。
+              其中，网络拥塞通过数据包与 ACK 路径上的硬件时间戳推断，NIC 拥塞则通过接收缓冲区占用率观测，并由 ACK 回传。
+            </p>
+            <p>
+              这一双窗口设计很关键，因为现代数据中心的拥塞并不只存在于交换网络内部。丢包后的有序缓冲、PCIe 瓶颈、
+              IOMMU 压力、主机内存访问延迟等，都可能在端点侧形成明显背压。如果传输协议只对交换网络排队做出响应，
+              它就会误判真正瓶颈，从而导致过冲、丢包和时延膨胀。
+            </p>
+            <p>
+              其有效性来自测量与执行的深度一体化：Falcon 直接在 PDL 中完成信号采集和窗口约束，不再依赖迟缓的带外控制环，
+              因而能在比传统方案更细粒度的时间尺度上同时响应网络与端点压力。
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>3.4 Congestion-Aware Multipathing</h3>
+        <div class="lang-grid">
+          <article class="lang-card">
+            <span class="lang-label">English</span>
+            <p>
+              Falcon’s multipathing operates inside a single connection. Each connection owns multiple flows, each flow is
+              associated with a distinct IPv6 flow label, and switches hash on that label to select potentially different paths.
+              Falcon tracks congestion state per flow, computes per-flow fabric windows, and chooses the flow with the largest
+              open window when sending the next packet.
+            </p>
+            <p>
+              The method is notable because it avoids two unattractive extremes. Pure packet spraying is simple but ignores path
+              congestion. Fully independent per-path sequence spaces would be more accurate but much more complex in hardware.
+              Falcon instead uses a hybrid design: a shared connection-level reliability space with flow-level congestion-aware scheduling.
+            </p>
+            <p>
+              This works because path diversity is exploited only when it is beneficial. Less congested paths naturally attract
+              more traffic, while loss recovery continues to operate coherently through a shared packet sequence space and
+              reordering-tolerant receiver logic.
+            </p>
+          </article>
+          <article class="lang-card">
+            <span class="lang-label">简体中文</span>
+            <p>
+              Falcon 的多路径机制工作在单连接内部。每个连接包含多个 flow，每个 flow 对应不同的 IPv6 flow label，
+              交换机可以基于该 label 将流量散列到不同路径。Falcon 为每个 flow 分别维护拥塞状态和 fabric 窗口，
+              在发包时选择“剩余开放窗口最大”的 flow 来发送下一个分组。
+            </p>
+            <p>
+              这个方法的重要之处在于，它避开了两个都不理想的极端方案。纯粹的 packet spraying 虽简单，但完全忽视路径拥塞；
+              而为每条路径分别建立独立序列空间，虽然更精确，却会显著增加硬件复杂度。Falcon 采用折中方案：可靠性空间在连接级共享，
+              路径调度在 flow 级感知拥塞。
+            </p>
+            <p>
+              它之所以有效，是因为路径多样性只会在“有利时”被利用。更不拥塞的路径自然吸引更多流量，而共享的序列空间与可容忍乱序
+              的接收逻辑，则保证了多路径不会破坏丢包恢复和有序语义。
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>3.5 Resource Admission, Backpressure, Isolation, and the Falcon Adaptive Engine</h3>
+        <div class="lang-grid">
+          <article class="lang-card">
+            <span class="lang-label">English</span>
+            <p>
+              Falcon explicitly manages finite on-NIC contexts and buffers. Transactions reserve not only transmit-side resources
+              for requests but also receive-side resources for their corresponding responses. This design prevents response-path
+              deadlocks and avoids issuing work that cannot be completed safely.
+            </p>
+            <p>
+              When resources run short, Falcon backpressures ULPs through Xon/Xoff-style signaling and can emit resource NACKs
+              for incoming traffic. Fine-grained backpressure is then used to preserve isolation, so slow or stalled connections
+              do not monopolize shared NIC resources and degrade unrelated flows.
+            </p>
+            <p>
+              The FAE complements this by placing algorithms in software while keeping the per-packet enforcement machinery in
+              hardware. This is a carefully chosen split: hardware preserves line-rate behavior, but software retains room for
+              operational updates to congestion control, path selection, acknowledgment modulation, and resource policies.
+            </p>
+          </article>
+          <article class="lang-card">
+            <span class="lang-label">简体中文</span>
+            <p>
+              Falcon 对 NIC 上有限的上下文和缓冲资源进行显式管理。一个事务在发送请求时，不仅要预留请求侧的发送资源，
+              还要为其将来的响应预留接收资源。这种设计可以从根源上避免响应路径上的死锁，并防止系统发出那些“注定无法被安全完成”的操作。
+            </p>
+            <p>
+              当资源不足时，Falcon 通过类似 Xon/Xoff 的机制向上层 ULP 施加背压，并可对到来的网络流量返回资源 NACK。
+              进一步地，它通过细粒度背压保障隔离性，避免慢连接或阻塞连接长期占用共享 NIC 资源，从而拖累无关流。
+            </p>
+            <p>
+              FAE 则在此基础上提供“算法在软件、执行在硬件”的补充能力。这种切分非常关键：硬件保证线速行为，软件则为拥塞控制、
+              路径选择、ACK 调制和资源策略的持续更新保留了演进空间。
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>4. Key Results</h2>
+        <div class="section-note">Experimental setup and the paper’s main empirical claims.</div>
+      </div>
+      <div class="lang-grid">
+        <article class="lang-card">
+          <span class="lang-label">English</span>
+          <p>
+            The evaluation uses a 32-machine testbed with 200 Gbps Falcon NICs and 400 Gbps NVIDIA CX-7 NICs configured for
+            RoCE, plus validated simulation for features not directly available in the hardware testbed. The authors evaluate
+            protocol behavior under loss, reordering, congestion, and multipathing; hardware scalability under high op rates
+            and high connection counts; and application-level impact on MPI, HPC, storage disaggregation, and live migration.
+          </p>
+          <p>
+            The results support three main claims. First, Falcon’s reliability and delay-based control loops remain stable under
+            loss and reordering, whereas RoCE variants suffer large goodput collapses and slower recovery. Second, Falcon’s
+            native multipathing materially improves both latency and sustainable load, which strengthens the paper’s claim that
+            general-purpose Ethernet requires path diversity to be a first-class transport concern. Third, the hardware design
+            is not narrowly optimized for microbenchmarks: the benefits carry through to MPI collectives, HPC applications, and
+            storage or migration stacks that sit above RDMA or NVMe.
+          </p>
+        </article>
+        <article class="lang-card">
+          <span class="lang-label">简体中文</span>
+          <p>
+            论文的评测基于一个 32 台机器的测试床，配备 200 Gbps 的 Falcon NIC 和 400 Gbps 的 NVIDIA CX-7 RoCE NIC；
+            对于测试床中暂不具备的特性，作者又结合了与硬件仿真结果相校验的模拟器。评测内容覆盖：丢包、乱序、拥塞和多路径下的协议行为，
+            高操作率和高连接数下的硬件可扩展性，以及 MPI、HPC、存储解耦和虚拟机迁移等真实应用栈中的系统影响。
+          </p>
+          <p>
+            这些结果主要支撑三类主张。第一，Falcon 的可靠性机制与基于时延的控制环在丢包和乱序环境下依然稳定，而 RoCE 变体则出现明显吞吐塌陷
+            和更慢恢复。第二，Falcon 的原生多路径不仅降低时延，还显著提高可持续负载，从而强化了论文的一个核心观点：在通用以太网中，路径多样性
+            必须被视为传输层的一等公民。第三，Falcon 的收益并非局限于微基准，而是能够贯穿到 MPI、HPC、存储和迁移等上层系统场景。
+          </p>
+        </article>
+      </div>
+
+      <div class="chart-grid">
+        <figure class="chart">
+          <h4>Loss/Recovery Robustness</h4>
+          <svg viewBox="0 0 520 230" role="img" aria-label="Goodput comparison under loss">
+            <rect x="0" y="0" width="520" height="230" rx="14" fill="#0a1622"/>
+            <line x1="70" y1="185" x2="485" y2="185" stroke="rgba(255,255,255,0.18)" />
+            <text x="70" y="205" fill="#9db2c6" font-size="12">RoCE GBN</text>
+            <text x="225" y="205" fill="#9db2c6" font-size="12">RoCE SR</text>
+            <text x="377" y="205" fill="#9db2c6" font-size="12">Falcon</text>
+            <rect x="78" y="100" width="88" height="85" rx="8" fill="#ff7b72"/>
+            <rect x="232" y="72" width="88" height="113" rx="8" fill="#ffbf69"/>
+            <rect x="386" y="30" width="88" height="155" rx="8" fill="#5ed0ff"/>
+            <text x="90" y="92" fill="#dce9f4" font-size="12">large collapse</text>
+            <text x="234" y="64" fill="#dce9f4" font-size="12">5% to 52% lower</text>
+            <text x="390" y="22" fill="#dce9f4" font-size="12">stable under loss</text>
+            <text x="30" y="38" fill="#9db2c6" font-size="12">Relative goodput</text>
+          </svg>
+          <div class="caption">
+            Based on the paper’s loss and reordering experiments: Falcon maintains stable goodput, while RoCE can lose up to 3.4x goodput under loss and up to 20x under reordering in the worst case.
+          </div>
+        </figure>
+
+        <figure class="chart">
+          <h4>Native Multipath Payoff</h4>
+          <svg viewBox="0 0 520 230" role="img" aria-label="Multipath latency and sustainable load">
+            <rect x="0" y="0" width="520" height="230" rx="14" fill="#0a1622"/>
+            <text x="44" y="34" fill="#9db2c6" font-size="12">Sustainable offered load</text>
+            <rect x="64" y="70" width="122" height="26" rx="8" fill="#ff7b72"/>
+            <rect x="64" y="128" width="184" height="26" rx="8" fill="#5ed0ff"/>
+            <text x="64" y="62" fill="#dce9f4" font-size="12">Single path: 60%</text>
+            <text x="64" y="120" fill="#dce9f4" font-size="12">Multipath: 90%</text>
+            <text x="300" y="92" fill="#ffd6d2" font-size="18" font-weight="700">60%</text>
+            <text x="300" y="150" fill="#b5f0ff" font-size="18" font-weight="700">90%</text>
+            <text x="44" y="194" fill="#dce9f4" font-size="14">Latency advantage: up to 180x lower</text>
+          </svg>
+          <div class="caption">
+            The paper argues that transport-level multipathing is not an optional optimization. It is necessary for predictable performance in path-diverse fabrics.
+          </div>
+        </figure>
+
+        <figure class="chart">
+          <h4>Hardware Scalability</h4>
+          <svg viewBox="0 0 520 230" role="img" aria-label="Operation-rate and latency scaling">
+            <rect x="0" y="0" width="520" height="230" rx="14" fill="#0a1622"/>
+            <line x1="65" y1="180" x2="480" y2="180" stroke="rgba(255,255,255,0.18)" />
+            <polyline fill="none" stroke="#5ed0ff" stroke-width="5" points="75,164 132,146 188,128 244,92 300,76 356,60 412,48" />
+            <circle cx="244" cy="92" r="5" fill="#8cf0c7"/>
+            <text x="250" y="86" fill="#dce9f4" font-size="12">12 QPs -> 120 Mops/s</text>
+            <text x="74" y="200" fill="#9db2c6" font-size="12">1</text>
+            <text x="129" y="200" fill="#9db2c6" font-size="12">2</text>
+            <text x="185" y="200" fill="#9db2c6" font-size="12">4</text>
+            <text x="240" y="200" fill="#9db2c6" font-size="12">12</text>
+            <text x="297" y="200" fill="#9db2c6" font-size="12">16</text>
+            <text x="351" y="200" fill="#9db2c6" font-size="12">20</text>
+            <text x="407" y="200" fill="#9db2c6" font-size="12">30 QPs</text>
+            <text x="40" y="38" fill="#9db2c6" font-size="12">Operation rate</text>
+            <text x="40" y="54" fill="#dce9f4" font-size="13">Single QP already reaches 20 Mops/s</text>
+            <text x="40" y="70" fill="#dce9f4" font-size="13">p99 and median latency within 1% of ideal for message-size scaling</text>
+          </svg>
+          <div class="caption">
+            Falcon is positioned as both a high-bandwidth and high-operation-rate transport, which is important for fine-grained storage and RPC-like patterns.
+          </div>
+        </figure>
+
+        <figure class="chart">
+          <h4>Application-Level Impact</h4>
+          <svg viewBox="0 0 520 230" role="img" aria-label="Application level speedups">
+            <rect x="0" y="0" width="520" height="230" rx="14" fill="#0a1622"/>
+            <text x="38" y="42" fill="#9db2c6" font-size="12">Relative improvement</text>
+            <rect x="54" y="58" width="204" height="20" rx="7" fill="#5ed0ff"/>
+            <rect x="54" y="96" width="262" height="20" rx="7" fill="#8cf0c7"/>
+            <rect x="54" y="134" width="115" height="20" rx="7" fill="#ffbf69"/>
+            <rect x="54" y="172" width="146" height="20" rx="7" fill="#c5b3ff"/>
+            <text x="54" y="53" fill="#dce9f4" font-size="12">MPI AllToAll (4B): 4.3x faster</text>
+            <text x="54" y="91" fill="#dce9f4" font-size="12">AllReduce (64KB): 5.5x faster</text>
+            <text x="54" y="129" fill="#dce9f4" font-size="12">GROMACS: 2.4x higher best-case scale</text>
+            <text x="54" y="167" fill="#dce9f4" font-size="12">WRF: 32% better simulation time</text>
+          </svg>
+          <div class="caption">
+            The broad takeaway is that Falcon’s transport improvements survive contact with real software stacks rather than disappearing outside microbenchmarks.
+          </div>
+        </figure>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Experiment</th>
+            <th>Main quantitative result</th>
+            <th>Interpretation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Loss and reordering</td>
+            <td>Falcon keeps goodput stable; RoCE reliability schemes see up to 3.4x loss-induced degradation, and up to 20x lower goodput under severe reordering.</td>
+            <td>The receiver’s out-of-order tolerance and sender-side precise retransmission are the core differentiators.</td>
+          </tr>
+          <tr>
+            <td>End-host congestion</td>
+            <td>Falcon converges to the downgraded 100 Gbps receiver bottleneck quickly; RoCE takes roughly 2x longer to converge and 6x longer to ramp back up.</td>
+            <td>NIC-side congestion signaling is treated as a first-class transport signal rather than an afterthought.</td>
+          </tr>
+          <tr>
+            <td>Multipathing</td>
+            <td>Up to 180x lower latency and sustainable load up to 90% of fabric capacity versus 60% for single-path.</td>
+            <td>This supports the paper’s argument that path diversity must be integrated into the transport itself.</td>
+          </tr>
+          <tr>
+            <td>Hardware scalability</td>
+            <td>120 Mops/s with 12 QPs; single QP reaches 20 Mops/s; CX-7 shows about 3x latency increase above 100K connections.</td>
+            <td>Falcon’s design targets the absence of performance cliffs, not just fast-path throughput.</td>
+          </tr>
+          <tr>
+            <td>Applications</td>
+            <td>4.3x faster small-message MPI AllToAll, 5.5x faster 64KB AllReduce, 2.4x GROMACS benefit, 32% WRF improvement, NLF within 10% of local SSD, and up to 6x lower vCPU wait time in live migration.</td>
+            <td>The architecture is compelling because it improves both communication kernels and end-to-end applications.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>5. Conclusion</h2>
+        <div class="section-note">Main findings and broader implications.</div>
+      </div>
+      <div class="lang-grid">
+        <article class="lang-card">
+          <span class="lang-label">English</span>
+          <p>
+            Falcon’s main finding is that a hardware transport can remain efficient without being brittle. The paper shows that
+            reliable delivery, multipathing, congestion control, and multi-ULP semantics do not need to be sacrificed simply to
+            preserve line-rate hardware execution. Instead, Falcon uses careful layering and explicit resource management to
+            move complexity into the right place rather than pretending that the complexity does not exist.
+          </p>
+          <p>
+            The broader implication is that future datacenter interconnects may increasingly converge toward hardware transports
+            that look less like static offloads and more like programmable systems components. Falcon suggests that the next
+            generation of NIC transports should expose a stable high-speed mechanism layer while keeping control algorithms
+            upgradeable and deployment-aware.
+          </p>
+        </article>
+        <article class="lang-card">
+          <span class="lang-label">简体中文</span>
+          <p>
+            Falcon 的主要结论是：硬件传输层可以同时做到高效与不脆弱。论文表明，为了维持线速硬件执行，并不必须牺牲可靠投递、
+            多路径、拥塞控制和多 ULP 语义支持。Falcon 的做法是通过精细分层和显式资源管理，把复杂性放到正确的位置，而不是假装
+            这些复杂性不存在。
+          </p>
+          <p>
+            更广泛的意义在于，未来的数据中心互连很可能会朝着“可编程硬件传输系统部件”演进，而不再只是静态的固定功能卸载。
+            Falcon 所展示的是一种方向：机制层保持高速、稳定和可验证，控制算法则保持可升级并能适应部署环境变化。
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>6. Insights and Critical Analysis</h2>
+        <div class="section-note">Design choices, strengths, limitations, and future research implications.</div>
+      </div>
+
+      <div class="insight-grid">
+        <article class="insight-card">
+          <div class="pill good">Strength / 优势</div>
+          <p>
+            Falcon’s strongest innovation is not a single mechanism but the <strong>coherence of the whole stack</strong>.
+            Reliability, congestion control, multipathing, and resource isolation reinforce one another. This is why the paper
+            is more convincing than designs that optimize one narrow bottleneck while externalizing the rest of the complexity.
+          </p>
+          <p>
+            Falcon 最突出的创新并非单一机制，而是整套栈的<strong>协同性</strong>。可靠性、拥塞控制、多路径和资源隔离彼此支撑，
+            这使其比那些只优化单一瓶颈、却把其他复杂性外溢给系统其他层的方案更具说服力。
+          </p>
+        </article>
+        <article class="insight-card">
+          <div class="pill bad">Limitation / 局限</div>
+          <p>
+            The paper’s evaluation is strong but still reflects a designer-built system. The hardware cost is described as
+            modest, yet broader evidence on verification complexity, firmware/software operational burden, failure debugging,
+            and interoperability across vendors is limited. These questions matter for adoption.
+          </p>
+          <p>
+            论文评测虽然扎实，但仍主要来自作者主导构建的系统。文中称硬件代价较小，但对于验证复杂度、软硬件协同维护成本、
+            故障排查难度以及跨厂商互操作性等问题，证据仍然有限。这些因素会直接影响实际部署。
+          </p>
+        </article>
+        <article class="insight-card">
+          <div class="pill good">Future Work / 未来方向</div>
+          <p>
+            The most promising future direction is the evolution of the FAE abstraction. If the software-control and
+            hardware-mechanism split remains stable, Falcon-like transports could become a substrate for adaptive scheduling,
+            tenant-aware fairness, in-network telemetry consumption, or workload-specific transport policies.
+          </p>
+          <p>
+            最值得期待的未来方向是 FAE 抽象的进一步演化。如果“软件控制 + 硬件机制”的边界能够稳定下来，
+            类 Falcon 的传输层就可能成为自适应调度、租户感知公平性、带内遥测利用以及工作负载定制传输策略的底座。
+          </p>
+        </article>
+      </div>
+
+      <div class="lang-grid">
+        <article class="lang-card">
+          <span class="lang-label">English</span>
+          <p>
+            A particularly strong design choice is Falcon’s refusal to treat endpoint congestion as someone else’s problem.
+            By incorporating receiver-side resource pressure into the transport feedback loop, Falcon acknowledges a systems
+            reality that many network-only congestion designs overlook. This is important because modern datacenter performance
+            bottlenecks increasingly span NICs, PCIe, memory systems, and accelerators rather than existing purely in switch queues.
+          </p>
+          <p>
+            At the same time, Falcon’s architecture implicitly assumes that on-NIC memory, state tracking, and programmable
+            control remain affordable at future scales. That assumption may hold for premium datacenter NICs, but it could
+            become more difficult under stronger isolation, encryption, telemetry, or verification requirements. Thus, the
+            long-term question is not whether Falcon’s ideas are good, but whether they can remain economically sustainable as
+            NIC complexity grows.
+          </p>
+        </article>
+        <article class="lang-card">
+          <span class="lang-label">简体中文</span>
+          <p>
+            Falcon 的一个特别强的设计选择，是它没有把端点拥塞视为“别人的问题”。通过把接收端资源压力显式纳入传输反馈环，
+            Falcon 承认了现代系统中的一个现实：性能瓶颈越来越多地横跨 NIC、PCIe、内存系统和加速器，而不再只存在于交换机队列之中。
+            这一点使它比许多只关注网络侧拥塞的方案更符合生产环境。
+          </p>
+          <p>
+            但另一方面，Falcon 也隐含地假设：NIC 上的状态跟踪、片上内存以及可编程控制在未来规模下仍然是可负担的。
+            对于高端数据中心 NIC，这一假设也许成立；但若未来进一步叠加更强的隔离、加密、遥测和验证需求，这种复杂度的经济可持续性
+            可能会受到挑战。因此，长期问题并不是 Falcon 的思想是否正确，而是这些思想在 NIC 持续复杂化的背景下能否保持成本可接受。
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>7. Critique</h2>
+        <div class="section-note">Three strengths and three weaknesses identified after reading the paper.</div>
+      </div>
+
+      <div class="critique-grid">
+        <article class="critique-card">
+          <div class="pill good">Strength 1</div>
+          <p>
+            <strong>End-to-end systems completeness.</strong> The paper does not stop at proposing a new loss-recovery primitive;
+            it integrates ordering, ULP semantics, congestion control, multipathing, and resource admission into one coherent transport.
+          </p>
+          <p>
+            <strong>系统完整性强。</strong> 论文不是只提出一个新的重传机制，而是把排序、ULP 语义、拥塞控制、多路径和资源准入整合成一个一致的传输系统。
+          </p>
+        </article>
+        <article class="critique-card">
+          <div class="pill good">Strength 2</div>
+          <p>
+            <strong>Evaluation breadth.</strong> The paper validates Falcon from protocol microbenchmarks all the way to MPI, HPC,
+            storage disaggregation, and live migration, which strengthens the credibility of the claimed benefits.
+          </p>
+          <p>
+            <strong>评测覆盖面广。</strong> 论文从协议微基准一直评估到 MPI、HPC、存储解耦和虚拟机迁移，显著增强了其收益主张的可信度。
+          </p>
+        </article>
+        <article class="critique-card">
+          <div class="pill good">Strength 3</div>
+          <p>
+            <strong>Well-chosen hardware/software split.</strong> The FAE abstraction is a practical contribution because it
+            acknowledges the need for algorithmic evolution without forfeiting hardware datapath efficiency.
+          </p>
+          <p>
+            <strong>软硬件切分合理。</strong> FAE 抽象很有现实价值，因为它既承认算法需要持续演化，又没有放弃硬件数据通路的效率优势。
+          </p>
+        </article>
+        <article class="critique-card">
+          <div class="pill bad">Weakness 1</div>
+          <p>
+            <strong>Evidence on deployment complexity is limited.</strong> The paper gives encouraging die-size and power numbers,
+            but provides less detail on verification cost, operability, debugging, and lifecycle maintenance in production fleets.
+          </p>
+          <p>
+            <strong>对部署复杂度的证据不足。</strong> 论文给出了较乐观的面积和功耗数据，但对验证成本、运维、调试和生产生命周期维护讨论较少。
+          </p>
+        </article>
+        <article class="critique-card">
+          <div class="pill bad">Weakness 2</div>
+          <p>
+            <strong>Comparative scope is still selective.</strong> RoCE is an important baseline, but broader head-to-head
+            comparisons with other emerging hardware transports and security-heavy deployments would strengthen the argument further.
+          </p>
+          <p>
+            <strong>对比范围仍偏选择性。</strong> RoCE 是重要基线，但如果能进一步与更多新型硬件传输和高安全需求部署进行正面对比，结论会更有说服力。
+          </p>
+        </article>
+        <article class="critique-card">
+          <div class="pill bad">Weakness 3</div>
+          <p>
+            <strong>Programmability remains partially abstract.</strong> The paper demonstrates scalability of the FAE concept,
+            but readers are left wanting a clearer model of programming complexity, safe updates, and policy verification.
+          </p>
+          <p>
+            <strong>可编程性仍有部分抽象化。</strong> 论文展示了 FAE 的可扩展性，但对实际编程复杂度、安全升级机制和策略验证方式仍缺少更具体的说明。
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>Sources</h2>
+        <div class="section-note">Primary sources used to prepare this report.</div>
+      </div>
+      <ul class="source-list">
+        <li><a href="https://praveenk.io/papers/falcon.pdf">Falcon: A Reliable, Low Latency Hardware Transport (public paper PDF)</a></li>
+        <li><a href="https://doi.org/10.1145/3718958.3754353">ACM DOI page for SIGCOMM 2025 version</a></li>
+      </ul>
+      <p class="footer">
+        Report prepared as a bilingual technical reading note. Quantitative claims above are drawn from the paper’s abstract and evaluation sections; phrasing and analysis are original.
+      </p>
+    </section>
+  </main>
+</body>
+</html>
