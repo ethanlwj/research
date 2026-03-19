@@ -391,7 +391,9 @@
       font-size: 0.92rem;
     }
     body[data-view="en"] .lang-card.zh,
-    body[data-view="zh"] .lang-card.en {
+    body[data-view="zh"] .lang-card.en,
+    body[data-view="en"] .zh,
+    body[data-view="zh"] .en {
       display: none;
     }
     body[data-view="en"] .lang-grid,
@@ -1021,37 +1023,37 @@
 
       <div class="critique-grid">
         <article class="critique-card">
-          <div class="pill good">Strength / 优势</div>
-          <p>
+          <div class="pill good"><span class="en">Strength</span><span class="zh">优势</span></div>
+          <p class="en">
             The paper’s biggest strength is conceptual coherence. The three main methods are not arbitrary independent knobs; they all emerge from the same SSM-centric view and target
             different failure modes of prior linear models: discretization error, weak state dynamics, and poor decode arithmetic intensity. That coherence makes the empirical results easier
             to trust because the mechanisms and outcomes align.
           </p>
-          <p>
+          <p class="zh">
             论文最大的优点在于概念上的一致性。三项核心方法并不是彼此孤立的调参项，而是都从同一个 SSM 视角自然推出，分别针对以往线性模型的三个问题：
             离散化误差、状态动力学不足以及解码算术强度过低。正因为机制和结果之间关系清晰，论文的实验结论也更容易令人信服。
           </p>
         </article>
         <article class="critique-card">
-          <div class="pill bad">Limitation / 局限</div>
-          <p>
+          <div class="pill bad"><span class="en">Limitation</span><span class="zh">局限</span></div>
+          <p class="en">
             The retrieval story remains incomplete. The paper is candid that pure Mamba-3 still struggles on some real-world extraction tasks, and this matters because such tasks often
             resemble the messy, long-context workloads where attention remains attractive. As a result, Mamba-3 should be read as a frontier-advancing recurrent backbone, not yet as a
             universal replacement for attention.
           </p>
-          <p>
+          <p class="zh">
             论文在检索问题上的叙事仍不完整。作者坦率承认纯 Mamba-3 在一些真实世界信息抽取任务上仍表现不足，而这些任务恰恰接近注意力模型擅长的“长上下文、结构杂乱”场景。
             因此，更合理的理解是：Mamba-3 提升了递归骨干网络的上限，但还不能被视为对注意力机制的普适替代。
           </p>
         </article>
         <article class="critique-card">
-          <div class="pill neutral">Future Work / 未来方向</div>
-          <p>
+          <div class="pill neutral"><span class="en">Future Work</span><span class="zh">未来方向</span></div>
+          <p class="en">
             A promising next step is to combine Mamba-3 style recurrent layers with selectively placed attention, retrieval modules, or learned memory systems in a way that preserves the
             favorable decode path. Another important research direction is determining whether the complex-state and MIMO ideas scale as cleanly at much larger model sizes and longer
             deployment contexts as they do in the paper’s controlled experiments.
           </p>
-          <p>
+          <p class="zh">
             一个很有前景的后续方向，是把 Mamba-3 式递归层与稀疏注意力、检索模块或学习型记忆系统进行更紧密的组合，同时尽量保持其有利的解码路径。
             另一条重要研究线，则是检验复值状态和 MIMO 思想在更大模型规模、以及更长真实部署上下文中，是否还能像论文中的受控实验那样稳定奏效。
           </p>
@@ -1067,45 +1069,68 @@
 
       <div class="critique-grid">
         <article class="critique-card">
-          <div class="pill good">Strength 1</div>
-          <p>
+          <div class="pill good"><span class="en">Strength 1</span><span class="zh">优点 1</span></div>
+          <p class="en">
             The paper provides a rare blend of mathematical motivation and systems justification. The numerical-analysis argument for discretization, the representational argument for
             complex state updates, and the hardware argument for MIMO all point in the same direction.
           </p>
+          <p class="zh">
+            这篇论文难得地把数学动机与系统论证结合在了一起。无论是离散化的数值分析依据、复值状态更新的表征能力解释，还是 MIMO 的硬件效率动机，
+            三者都指向同一个设计目标，因此整篇论文的叙事非常统一。
+          </p>
         </article>
         <article class="critique-card">
-          <div class="pill good">Strength 2</div>
-          <p>
+          <div class="pill good"><span class="en">Strength 2</span><span class="zh">优点 2</span></div>
+          <p class="en">
             The formal-language experiments are highly valuable because they test a specific known weakness of linear recurrent models. The results make a stronger case than benchmark
             averages alone because they reveal a qualitative capability difference.
           </p>
+          <p class="zh">
+            形式语言实验的价值很高，因为它直接测试了线性递归模型一个已知而关键的弱点。相比单纯展示 benchmark 平均分，这类实验更能说明问题，
+            因为它揭示的是能力层面的质变，而不仅仅是分数上的小幅提升。
+          </p>
         </article>
         <article class="critique-card">
-          <div class="pill good">Strength 3</div>
-          <p>
+          <div class="pill good"><span class="en">Strength 3</span><span class="zh">优点 3</span></div>
+          <p class="en">
             The paper does not ignore deployment. By reporting kernel latencies and providing optimized implementations, it addresses the usual criticism that architectural gains disappear
             once real inference kernels are considered.
           </p>
+          <p class="zh">
+            论文没有回避部署现实。通过报告内核级延迟并提供优化实现，作者回应了一个常见质疑：很多架构改进一旦进入真实推理内核环境，优势就会明显缩水。
+            Mamba-3 至少在这方面给出了比较有力的证据。
+          </p>
         </article>
         <article class="critique-card">
-          <div class="pill bad">Weakness 1</div>
-          <p>
+          <div class="pill bad"><span class="en">Weakness 1</span><span class="zh">缺点 1</span></div>
+          <p class="en">
             The retrieval evidence still limits the scope of the claims. Fixed-state models remain weaker than attention on some tasks that require robust access to diffuse or irregularly
             structured context.
           </p>
-        </article>
-        <article class="critique-card">
-          <div class="pill bad">Weakness 2</div>
-          <p>
-            Some of the paper’s strongest arguments depend on synthetic tasks and proxy plots. Those are informative, but they do not fully substitute for broader long-context and
-            production-style evaluations across more diverse workloads.
+          <p class="zh">
+            检索实验的证据仍然限制了论文结论的外推范围。对于那些需要稳定访问分散信息或不规则结构上下文的任务，固定状态大小的模型依然弱于注意力机制，
+            这意味着论文的主张还不能无限推广。
           </p>
         </article>
         <article class="critique-card">
-          <div class="pill bad">Weakness 3</div>
-          <p>
+          <div class="pill bad"><span class="en">Weakness 2</span><span class="zh">缺点 2</span></div>
+          <p class="en">
+            Some of the paper’s strongest arguments depend on synthetic tasks and proxy plots. Those are informative, but they do not fully substitute for broader long-context and
+            production-style evaluations across more diverse workloads.
+          </p>
+          <p class="zh">
+            论文中一些最强的论据仍然依赖合成任务和代理指标图。这些证据当然有价值，但它们仍不能完全替代在更广泛工作负载、长上下文以及更接近生产环境条件下的系统评测。
+          </p>
+        </article>
+        <article class="critique-card">
+          <div class="pill bad"><span class="en">Weakness 3</span><span class="zh">缺点 3</span></div>
+          <p class="en">
             MIMO improves decode utilization but increases training-side compute, and the paper leaves open how favorable that tradeoff remains at very large scales or under more constrained
             training budgets.
+          </p>
+          <p class="zh">
+            MIMO 的确改善了解码阶段的利用率，但也增加了训练侧计算成本。论文并没有完全回答：当模型规模继续放大，或者训练预算更加受限时，
+            这种训练与推理之间的权衡是否还能保持同样有利。
           </p>
         </article>
       </div>
