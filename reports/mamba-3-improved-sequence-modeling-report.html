@@ -1,0 +1,1163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mamba-3: Improved Sequence Modeling using State Space Principles - Bilingual Technical Report</title>
+  <style>
+    :root {
+      --bg: #071019;
+      --bg-2: #0a1620;
+      --panel: rgba(12, 23, 34, 0.94);
+      --panel-2: rgba(16, 30, 44, 0.96);
+      --line: rgba(135, 170, 194, 0.20);
+      --line-strong: rgba(135, 170, 194, 0.34);
+      --ink: #e9f2f8;
+      --muted: #a4b9c9;
+      --accent: #58d3ff;
+      --accent-2: #8ef0bf;
+      --accent-3: #ffca7a;
+      --accent-4: #ff8f7f;
+      --shadow: rgba(0, 0, 0, 0.28);
+      --hero: linear-gradient(135deg, rgba(9, 24, 37, 0.98), rgba(13, 36, 52, 0.98));
+      --font-body: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      --font-ui: "Avenir Next", "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 17px/1.72 var(--font-body);
+      background:
+        radial-gradient(circle at 8% 0%, rgba(88, 211, 255, 0.16), transparent 24%),
+        radial-gradient(circle at 90% 4%, rgba(142, 240, 191, 0.12), transparent 26%),
+        linear-gradient(180deg, #051018 0%, #071019 38%, #0b141d 100%);
+    }
+    a { color: var(--accent); }
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 18px 72px;
+    }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 30px;
+      border-radius: 26px;
+      border: 1px solid rgba(88, 211, 255, 0.20);
+      background: var(--hero);
+      box-shadow: 0 24px 70px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -60px;
+      bottom: -80px;
+      width: 330px;
+      height: 330px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(88, 211, 255, 0.17), transparent 66%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      font: 700 0.8rem/1 var(--font-ui);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent-2);
+      margin-bottom: 14px;
+    }
+    h1, h2, h3, h4 {
+      margin: 0;
+      line-height: 1.18;
+    }
+    h1 {
+      max-width: 900px;
+      font-size: 2.42rem;
+      margin-bottom: 14px;
+    }
+    .subtitle {
+      max-width: 920px;
+      color: #d6e8f5;
+      font-size: 1.04rem;
+      margin-bottom: 20px;
+    }
+    .meta-grid,
+    .metric-grid,
+    .chart-grid,
+    .card-grid,
+    .critique-grid,
+    .sources-grid {
+      display: grid;
+      gap: 14px;
+    }
+    .meta-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .meta-card,
+    .metric-card,
+    .panel,
+    .lang-card,
+    .chart,
+    .critique-card,
+    .source-card {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.16);
+    }
+    .meta-card {
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.04);
+    }
+    .meta-k {
+      display: block;
+      margin-bottom: 5px;
+      font: 700 0.76rem/1 var(--font-ui);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #9fddff;
+    }
+    .meta-v { color: #eef6fc; }
+    .toolbar {
+      position: sticky;
+      top: 12px;
+      z-index: 10;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 18px 0 0;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(8, 17, 26, 0.82);
+      border: 1px solid rgba(135, 170, 194, 0.18);
+      backdrop-filter: blur(14px);
+    }
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .nav a,
+    .toggle button {
+      border-radius: 999px;
+      border: 1px solid rgba(135, 170, 194, 0.18);
+      background: rgba(255,255,255,0.03);
+      color: var(--ink);
+      padding: 8px 12px;
+      text-decoration: none;
+      font: 600 0.86rem/1 var(--font-ui);
+      transition: 160ms ease;
+    }
+    .nav a:hover,
+    .toggle button:hover,
+    .toggle button.active {
+      border-color: rgba(88, 211, 255, 0.42);
+      background: rgba(88, 211, 255, 0.12);
+      color: #f4fbff;
+    }
+    .toggle {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      color: var(--muted);
+      font: 700 0.82rem/1 var(--font-ui);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-right: 4px;
+    }
+    .panel {
+      margin-top: 18px;
+      padding: 24px;
+      background: linear-gradient(180deg, rgba(18, 31, 45, 0.97), rgba(10, 20, 30, 0.97));
+    }
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    .section-head h2 {
+      font-size: 1.44rem;
+      color: #f4f9fd;
+    }
+    .section-note {
+      max-width: 540px;
+      color: var(--muted);
+      text-align: right;
+      font-size: 0.92rem;
+    }
+    p { margin: 0 0 14px; }
+    .lede {
+      font-size: 1.04rem;
+      color: #dbeaf6;
+    }
+    .callout {
+      margin: 16px 0 2px;
+      padding: 16px 18px;
+      border-left: 4px solid var(--accent-3);
+      border-radius: 14px;
+      background: linear-gradient(90deg, rgba(255, 202, 122, 0.14), rgba(255,255,255,0.02));
+      color: #f8ecd9;
+    }
+    .metric-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 16px;
+    }
+    .metric-card {
+      padding: 18px;
+      background: linear-gradient(180deg, rgba(14, 28, 42, 0.98), rgba(10, 18, 28, 0.98));
+    }
+    .metric-title {
+      color: var(--muted);
+      font: 700 0.8rem/1.3 var(--font-ui);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .metric-value {
+      font: 700 2.08rem/1.04 var(--font-ui);
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+    .metric-desc {
+      color: #d5e4f0;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+    }
+    .bar {
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .bar > span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 18px rgba(88, 211, 255, 0.22);
+    }
+    .lang-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 14px;
+    }
+    .lang-card {
+      padding: 18px;
+      background: rgba(255,255,255,0.03);
+    }
+    .lang-label {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: #061119;
+      font: 700 0.76rem/1 var(--font-ui);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+    .subsection {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(135, 170, 194, 0.14);
+    }
+    .subsection:first-of-type {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: 0;
+    }
+    h3 {
+      margin-bottom: 12px;
+      font-size: 1.08rem;
+      color: var(--accent-2);
+    }
+    .equation {
+      margin: 12px 0 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(135, 170, 194, 0.16);
+      color: #edf7ff;
+      overflow-x: auto;
+      font-size: 0.96rem;
+    }
+    .mini-diagram {
+      margin: 14px 0 2px;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(88, 211, 255, 0.16);
+      background: linear-gradient(180deg, rgba(7, 20, 31, 0.95), rgba(12, 26, 39, 0.95));
+    }
+    .flow-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .flow-node {
+      padding: 12px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(142, 240, 191, 0.18);
+      background: rgba(255,255,255,0.03);
+      color: #ecf7fe;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .chart-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 14px;
+    }
+    .chart {
+      padding: 18px;
+      background: rgba(255,255,255,0.03);
+    }
+    .chart h4 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+      color: #f0f8ff;
+      line-height: 1.3;
+    }
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .caption {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.91rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 0.95rem;
+    }
+    th, td {
+      padding: 11px 12px;
+      text-align: left;
+      vertical-align: top;
+      border: 1px solid var(--line);
+    }
+    th {
+      color: #eff7ff;
+      background: rgba(88, 211, 255, 0.10);
+    }
+    td { color: #dbe8f4; }
+    .card-grid,
+    .critique-grid,
+    .sources-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 14px;
+    }
+    .critique-card,
+    .source-card {
+      padding: 18px;
+      background: rgba(255,255,255,0.03);
+    }
+    .pill {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+      font: 700 0.75rem/1 var(--font-ui);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .pill.good {
+      background: rgba(142, 240, 191, 0.15);
+      color: var(--accent-2);
+    }
+    .pill.bad {
+      background: rgba(255, 143, 127, 0.12);
+      color: #ffb7ab;
+    }
+    .pill.neutral {
+      background: rgba(88, 211, 255, 0.14);
+      color: #9fe3ff;
+    }
+    .footer {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    body[data-view="en"] .lang-card.zh,
+    body[data-view="zh"] .lang-card.en {
+      display: none;
+    }
+    body[data-view="en"] .lang-grid,
+    body[data-view="zh"] .lang-grid {
+      grid-template-columns: 1fr;
+    }
+    @media (max-width: 1024px) {
+      .meta-grid,
+      .metric-grid,
+      .chart-grid,
+      .card-grid,
+      .critique-grid,
+      .sources-grid,
+      .lang-grid {
+        grid-template-columns: 1fr;
+      }
+      .section-head {
+        display: block;
+      }
+      .section-note {
+        max-width: none;
+        text-align: left;
+        margin-top: 6px;
+      }
+      .flow-row {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    @media (max-width: 720px) {
+      body {
+        font-size: 16px;
+      }
+      .wrap {
+        padding: 14px 12px 40px;
+      }
+      .hero,
+      .panel {
+        padding: 18px;
+      }
+      .toolbar {
+        top: 8px;
+      }
+      h1 {
+        font-size: 1.66rem;
+      }
+      .meta-grid,
+      .flow-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body data-view="both">
+  <main class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Bilingual Technical Report</div>
+      <h1>Mamba-3: Improved Sequence Modeling using State Space Principles</h1>
+      <p class="subtitle">
+        A bilingual English + Simplified Chinese report on the accepted ICLR 2026 version of Mamba-3, focusing on the paper’s
+        sequence-modeling advances, hardware-efficiency argument, experimental evidence, and critical implications for future
+        sub-quadratic language model design.
+      </p>
+      <div class="meta-grid">
+        <div class="meta-card">
+          <span class="meta-k">Paper</span>
+          <span class="meta-v"><a href="https://openreview.net/pdf/302a1e7dbb2a1c68b7f89c4076ab02c06cbd1ac7.pdf">OpenReview PDF</a></span>
+        </div>
+        <div class="meta-card">
+          <span class="meta-k">Venue</span>
+          <span class="meta-v">ICLR 2026</span>
+        </div>
+        <div class="meta-card">
+          <span class="meta-k">Authors</span>
+          <span class="meta-v">Aakash Lahoti et al.</span>
+        </div>
+        <div class="meta-card">
+          <span class="meta-k">Core Thesis</span>
+          <span class="meta-v">Improve linear recurrent models by making SSMs more expressive and more inference-efficient</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="toolbar">
+      <nav class="nav" aria-label="Section navigation">
+        <a href="#tldr">TL;DR</a>
+        <a href="#intro">Introduction</a>
+        <a href="#methods">Key Methods</a>
+        <a href="#results">Key Results</a>
+        <a href="#conclusion">Conclusion</a>
+        <a href="#analysis">Insights</a>
+        <a href="#critique">Critique</a>
+      </nav>
+      <div class="toggle" role="group" aria-label="Language toggle">
+        <span class="toggle-label">View</span>
+        <button class="active" data-view="both" type="button">EN + 中文</button>
+        <button data-view="en" type="button">English</button>
+        <button data-view="zh" type="button">简体中文</button>
+      </div>
+    </section>
+
+    <section id="tldr" class="panel">
+      <div class="section-head">
+        <h2>1. TL;DR</h2>
+        <div class="section-note">Executive summary and at-a-glance evidence from the accepted paper.</div>
+      </div>
+      <div class="lang-grid">
+        <article class="lang-card en">
+          <span class="lang-label">English</span>
+          <p class="lede">
+            Mamba-3 argues that recent linear recurrent models have underperformed not because state space methods are fundamentally weak,
+            but because prior designs accepted avoidable compromises in discretization quality, state expressivity, and hardware utilization.
+            The paper revisits the SSM formulation directly and introduces three coupled changes: exponential-trapezoidal discretization,
+            a complex-valued state update implemented through a data-dependent RoPE equivalence, and a MIMO formulation that raises decode
+            arithmetic intensity without materially increasing latency.
+          </p>
+          <p>
+            The key contribution is therefore not just a better Mamba variant, but a reframing of recurrent sequence modeling as an
+            <em>inference-first systems problem</em>. The model improves downstream language modeling, solves synthetic state-tracking tasks
+            that defeat Mamba-2, and preserves fast low-latency decoding through custom kernels. In practical terms, the paper claims that
+            a carefully redesigned SSM layer can move the quality-efficiency Pareto frontier outward rather than merely trading one axis for another.
+          </p>
+        </article>
+        <article class="lang-card zh">
+          <span class="lang-label">简体中文</span>
+          <p class="lede">
+            Mamba-3 的核心论点是：近年来很多线性递归模型表现不够强，并不是因为状态空间方法本身能力不足，而是因为早期设计在离散化质量、
+            状态表达能力和硬件利用率上做了本可避免的妥协。论文重新从 SSM 原理出发，引入三项相互配合的改进：指数-梯形离散化、
+            通过数据依赖型 RoPE 等价形式实现的复值状态更新，以及在几乎不增加解码时延的情况下提升算术强度的 MIMO 结构。
+          </p>
+          <p>
+            因而，这篇论文的重要性不只是提出了一个更强的 Mamba 变体，而是把递归序列建模重新表述为一个
+            <em>以推理为中心的系统设计问题</em>。作者证明该模型不仅能提升下游语言建模性能，还能解决 Mamba-2 无法胜任的状态跟踪任务，
+            同时借助定制内核维持快速低时延解码。从更广义的角度看，这篇论文试图说明：只要重新设计 SSM 层，线性模型不必只是在质量和效率之间做被动交换，
+            而可以真正推动 Pareto 前沿外移。
+          </p>
+        </article>
+      </div>
+
+      <div class="callout">
+        At a glance / 一眼看懂: the paper reports <strong>+0.6 average downstream points</strong> for Mamba-3 SISO over GDN at 1.5B,
+        <strong>another +1.2 points</strong> from the MIMO variant, and <strong>near-perfect formal-language state tracking</strong>
+        on parity and modular arithmetic using data-dependent RoPE.
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-title">Downstream Accuracy</div>
+          <div class="metric-value">57.6</div>
+          <div class="metric-desc">At 1.5B, Mamba-3 MIMO reaches 57.6 average accuracy versus 55.8 for GDN and 55.7 for Mamba-2, a direct sign that the proposed changes are not merely theoretical.</div>
+          <div class="bar"><span style="width:86%"></span></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">State Size Efficiency</div>
+          <div class="metric-value">64 ~= 128</div>
+          <div class="metric-desc">Mamba-3 MIMO with state size 64 matches the perplexity of Mamba-2 with state size 128, supporting the paper’s performance-latency frontier claim.</div>
+          <div class="bar"><span style="width:80%"></span></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">State Tracking</div>
+          <div class="metric-value">100.00</div>
+          <div class="metric-desc">On parity, Mamba-3 reaches 100.00 scaled accuracy, while Mamba-2 scores 0.90 and Mamba-3 without RoPE scores 2.27, indicating a genuine capability shift rather than a small tuning win.</div>
+          <div class="bar"><span style="width:97%"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="intro" class="panel">
+      <div class="section-head">
+        <h2>2. Introduction</h2>
+        <div class="section-note">Background, problem statement, and why the authors revisit SSM principles.</div>
+      </div>
+      <div class="lang-grid">
+        <article class="lang-card en">
+          <span class="lang-label">English</span>
+          <p>
+            The paper is situated in the broader effort to reduce the inference cost of large language models. Transformers remain dominant,
+            but their quadratic attention compute and growing KV cache create a poor fit for deployment regimes where test-time compute and
+            throughput increasingly dominate economics. This has pushed interest toward sub-quadratic alternatives such as SSMs and linear attention,
+            which promise linear compute and constant memory during decoding.
+          </p>
+          <p>
+            However, the authors argue that many recent linear models sit on an unsatisfactory part of the quality-efficiency frontier. Some give up
+            modeling capability, especially on state-tracking tasks; others are theoretically efficient but still decode in a hardware-inefficient
+            manner because token generation is memory-bound rather than compute-bound. Mamba-2, for instance, improved training speed over Mamba-1,
+            but in the authors’ telling it did so partly by reducing expressivity.
+          </p>
+          <p>
+            The problem statement is therefore twofold. First, can a recurrent SSM layer become more expressive without reverting to Transformer-like cost?
+            Second, can that extra expressivity be packaged in a way that is aligned with actual hardware bottlenecks during generation? Mamba-3’s answer is
+            to derive improvements from the continuous-time SSM view itself, rather than bolt on unrelated heuristics.
+          </p>
+        </article>
+        <article class="lang-card zh">
+          <span class="lang-label">简体中文</span>
+          <p>
+            这篇论文处在“大模型推理成本下降”这一更大研究背景之中。Transformer 仍然是主流，但它的二次注意力计算以及不断增长的 KV cache，
+            使其在测试时计算和吞吐成本占主导的部署场景中越来越不经济。因此，学界和工业界开始更多关注 SSM 和线性注意力等次二次复杂度方案，
+            因为它们在解码阶段承诺线性计算和常数级内存。
+          </p>
+          <p>
+            但作者认为，很多近期线性模型仍停留在一个不理想的质量-效率前沿上。有的模型牺牲了建模能力，尤其是在状态跟踪任务上明显不足；
+            有的模型虽然理论上高效，但实际解码依然不够硬件友好，因为 token 生成过程受限于内存带宽而不是计算能力。作者把 Mamba-2 视为一个典型例子：
+            它相对 Mamba-1 优化了训练效率，却在一定程度上牺牲了表达能力。
+          </p>
+          <p>
+            因而，论文的问题陈述可以概括为两个层面：第一，递归型 SSM 层能否在不回退到 Transformer 成本结构的前提下提升表达能力；
+            第二，这种表达能力的提升能否与真实硬件瓶颈相匹配，而不是只停留在算法层面。Mamba-3 的回答是：回到连续时间 SSM 原理本身，从那里推导出方法上的改进，
+            而不是附加一系列彼此松散的经验技巧。
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="methods" class="panel">
+      <div class="section-head">
+        <h2>3. Key Methods</h2>
+        <div class="section-note">Each subsection explains the core idea, how it works, and why it works.</div>
+      </div>
+
+      <div class="subsection">
+        <h3>3.1 Exponential-Trapezoidal Discretization</h3>
+        <div class="lang-grid">
+          <article class="lang-card en">
+            <span class="lang-label">English</span>
+            <p>
+              The first method revisits how the continuous-time selective SSM is discretized. Prior Mamba models effectively used an Euler-style approximation
+              for the input integral, which is only first-order accurate. Mamba-3 instead derives a generalized trapezoidal rule for time-varying SSMs and uses
+              a data-dependent convex combination of the two interval endpoints. The resulting recurrence is:
+            </p>
+            <div class="equation">
+              h<sub>t</sub> = alpha<sub>t</sub> h<sub>t-1</sub> + beta<sub>t</sub> B<sub>t-1</sub> x<sub>t-1</sub> + gamma<sub>t</sub> B<sub>t</sub> x<sub>t</sub>
+            </div>
+            <p>
+              This matters for two reasons. Mathematically, the paper argues that the trapezoidal scheme gives second-order local accuracy under standard assumptions,
+              improving on Euler’s accumulated error. Architecturally, the recurrence can be expanded as an implicit width-2 convolution on the state-input rather than
+              an external short convolution on raw tokens. That is why the authors can plausibly remove the short causal convolution that many recurrent designs had
+              treated as indispensable.
+            </p>
+            <p>
+              In effect, the discretization is doing more than numerical housekeeping. It changes the functional form of the recurrence so that the sequence mixer itself
+              becomes richer, and the paper’s ablations show that this richer update interacts productively with learned B/C biases.
+            </p>
+          </article>
+          <article class="lang-card zh">
+            <span class="lang-label">简体中文</span>
+            <p>
+              第一项方法改进聚焦于连续时间选择性 SSM 的离散化方式。早期 Mamba 模型本质上采用的是类似 Euler 的输入积分近似，
+              其精度只有一阶。Mamba-3 则针对时变 SSM 推导了广义梯形法，用一个数据依赖的区间两端凸组合来近似输入积分，
+              从而得到如下递归形式：
+            </p>
+            <div class="equation">
+              h<sub>t</sub> = alpha<sub>t</sub> h<sub>t-1</sub> + beta<sub>t</sub> B<sub>t-1</sub> x<sub>t-1</sub> + gamma<sub>t</sub> B<sub>t</sub> x<sub>t</sub>
+            </div>
+            <p>
+              这一变化的重要性体现在两个层面。数学上，论文指出该梯形格式在标准条件下具备二阶局部精度，相比 Euler 积累误差更小。
+              结构上，这个递推式可以展开理解为施加在状态输入上的隐式宽度为 2 的卷积，而不是作用在原始 token 上的外部短卷积。
+              这就解释了为什么作者能够在实验上去掉许多递归模型一直依赖的短因果卷积。
+            </p>
+            <p>
+              因此，这个离散化步骤并不只是“数值分析上的修补”。它实质上改变了递归更新的函数形式，使序列混合器本身更有表达力。
+              论文中的消融实验进一步表明，这种更强的更新方式与可学习的 B/C 偏置之间存在明显协同效应。
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>3.2 Complex-Valued State Space Model and Data-Dependent RoPE</h3>
+        <div class="lang-grid">
+          <article class="lang-card en">
+            <span class="lang-label">English</span>
+            <p>
+              The second method addresses a recurring weakness of linear recurrent models: poor state tracking. Mamba-3 starts from a complex-valued SSM and then
+              shows that, after discretization, it is equivalent to a real-valued SSM whose transitions include data-dependent block rotations. Unrolled over time,
+              these rotations become a data-dependent rotary embedding applied to the B and C components. This is the paper’s "RoPE trick".
+            </p>
+            <div class="equation">
+              h<sub>t</sub> = e<sup>Delta t A<sub>t</sub></sup> R<sub>t</sub> h<sub>t-1</sub> + Delta t B<sub>t</sub> x<sub>t</sub>,
+              y<sub>t</sub> = C<sub>t</sub><sup>T</sup> h<sub>t</sub>
+            </div>
+            <p>
+              Why this works is conceptually elegant. Standard RoPE injects fixed rotations, while Mamba-3 uses token-dependent rotations that accumulate across time,
+              effectively giving the recurrent state a richer phase structure for tracking symbolic progress. The formal-language experiments make the point concrete:
+              Mamba-3 reaches 100.00 on parity and 98.51 on modular arithmetic without brackets, whereas Mamba-2 scores 0.90 and 47.81 respectively, and Mamba-3
+              without RoPE largely collapses.
+            </p>
+            <p>
+              This is one of the paper’s strongest claims because it is about capability rather than only perplexity. The method suggests that SSM-based layers can
+              represent algorithmically structured state transitions much better when the recurrence is allowed to rotate, not merely decay and add.
+            </p>
+          </article>
+          <article class="lang-card zh">
+            <span class="lang-label">简体中文</span>
+            <p>
+              第二项方法直接针对线性递归模型的一个顽固弱点：状态跟踪能力不足。Mamba-3 从复值 SSM 出发，证明在离散化之后，它等价于一个实值 SSM，
+              但其状态转移中包含数据依赖的分块旋转矩阵。沿时间展开后，这些旋转会转化为作用在 B 和 C 分量上的数据依赖型 rotary embedding，
+              也就是论文所说的 "RoPE trick"。
+            </p>
+            <div class="equation">
+              h<sub>t</sub> = e<sup>Delta t A<sub>t</sub></sup> R<sub>t</sub> h<sub>t-1</sub> + Delta t B<sub>t</sub> x<sub>t</sub>,
+              y<sub>t</sub> = C<sub>t</sub><sup>T</sup> h<sub>t</sub>
+            </div>
+            <p>
+              这一方法之所以有效，在于它提供了一种比常规实值递归更丰富的相位表达。标准 RoPE 使用固定旋转，而 Mamba-3 的旋转是随 token 动态变化并跨时间累积的，
+              这使得递归状态能够更好地编码符号式进展。形式语言实验把这一点展示得非常直接：Mamba-3 在 parity 上达到 100.00，在无括号模算术上达到 98.51；
+              相比之下，Mamba-2 分别只有 0.90 和 47.81，而去掉 RoPE 的 Mamba-3 几乎完全失效。
+            </p>
+            <p>
+              这是论文中最有说服力的部分之一，因为它讨论的是“能力跃迁”，而不仅仅是 perplexity 的微小改善。该方法暗示：当递归更新不仅允许衰减和加法，
+              还允许受输入驱动的旋转时，SSM 层就更有可能表示带有算法结构的状态演化过程。
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>3.3 Multi-Input, Multi-Output (MIMO) SSM</h3>
+        <div class="lang-grid">
+          <article class="lang-card en">
+            <span class="lang-label">English</span>
+            <p>
+              The third method is motivated explicitly by hardware efficiency during decoding. The authors observe that SSM generation is memory-bound: a large state must
+              be read and written for each token, while the actual arithmetic performed per byte is small. MIMO addresses this by replacing the outer-product style SISO
+              update with a matrix-matrix style update. Small rank expansion raises FLOPs faster than memory traffic, which increases arithmetic intensity.
+            </p>
+            <p>
+              This is a systems-aware idea. On an H100, the gap between the arithmetic intensity of a Mamba decode step and an efficient BF16 matmul is enormous. MIMO exploits
+              that slack by inserting more useful compute into the memory-bound step, so the model becomes more expressive without paying a commensurate wall-clock penalty.
+              The paper reports up to 4x more decoding FLOPs than Mamba-2 at fixed state size while keeping latency similar.
+            </p>
+            <p>
+              Empirically, the method does what the hardware argument predicts. At 1.5B, Mamba-3 MIMO improves average downstream accuracy from 56.4 to 57.6 over the SISO variant,
+              yet BF16 dstate=128 kernel latency rises only from 0.152 ms to 0.185 ms and remains close to Mamba-2’s 0.203 ms.
+            </p>
+          </article>
+          <article class="lang-card zh">
+            <span class="lang-label">简体中文</span>
+            <p>
+              第三项方法的出发点非常明确，就是提高解码阶段的硬件效率。作者指出，SSM 的 token 生成过程本质上是内存带宽受限的：
+              每个 token 都需要读写较大的状态，但单位字节对应的计算量却很低。MIMO 的做法，是把原来 SISO 中偏外积风格的更新改造成矩阵-矩阵风格的更新。
+              这样，小规模的 rank 扩展能够让 FLOPs 的增长快于内存流量增长，从而提高算术强度。
+            </p>
+            <p>
+              这是一个非常系统化的设计思路。以 H100 为例，Mamba 解码步骤的算术强度与高效 BF16 matmul 之间存在巨大差距。MIMO 正是利用这部分“空闲计算潜力”，
+              在内存受限步骤中塞入更多有意义的计算，使模型在几乎不增加墙钟时间的情况下变得更强。论文报告称，在固定状态大小下，MIMO 的解码 FLOPs 相比 Mamba-2
+              最多可增加 4 倍，但时延基本保持相近。
+            </p>
+            <p>
+              从实验看，这个方法确实兑现了它的硬件论证。在 1.5B 规模上，Mamba-3 MIMO 把平均下游准确率从 SISO 的 56.4 提升到 57.6，
+              而 BF16、dstate=128 条件下的内核延迟只从 0.152 ms 上升到 0.185 ms，仍然接近 Mamba-2 的 0.203 ms。
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>3.4 Architectural Refinements and Why the Full Package Works</h3>
+        <div class="lang-grid">
+          <article class="lang-card en">
+            <span class="lang-label">English</span>
+            <p>
+              Mamba-3 is not only the sum of its three headline ideas. The final architecture adds BC or QK normalization after the B and C projections and introduces learnable
+              head-specific channel-wise biases to B and C. The paper argues these biases provide more convolution-like behavior and help the exponential-trapezoidal update remove
+              the need for an explicit short convolution.
+            </p>
+            <p>
+              The important analytical point is that the design choices reinforce one another. Better discretization gives a richer recurrence; complex rotation gives the recurrence
+              a qualitatively stronger state-transition mechanism; MIMO improves inference-time compute utilization; normalization and biases stabilize and regularize the whole block.
+              This systems-level coherence is why the paper is more persuasive than work that adds isolated tricks without a unifying performance model.
+            </p>
+          </article>
+          <article class="lang-card zh">
+            <span class="lang-label">简体中文</span>
+            <p>
+              Mamba-3 并不只是三项 headline 方法的简单相加。最终架构还在 B、C 投影之后加入了 BC 或 QK 归一化，并为 B、C 增加了可学习的、按 head 和 channel 划分的偏置项。
+              论文认为，这些偏置带来了更接近卷积的行为，从而与指数-梯形更新配合，一起消除了显式短卷积的必要性。
+            </p>
+            <p>
+              更值得注意的是，这些设计选择彼此之间是相互支撑的。更好的离散化带来更丰富的递归形式；复值旋转让状态转移机制出现质变；MIMO 提高了解码阶段的计算利用率；
+              归一化和偏置则提升了稳定性并让整体结构更可训练。正是这种系统层面的协同性，使得这篇论文比那些只堆叠零散技巧、却缺乏统一性能模型的工作更具说服力。
+            </p>
+          </article>
+        </div>
+
+        <div class="mini-diagram">
+          <strong>Mamba-3 Design Logic</strong>
+          <div class="flow-row">
+            <div class="flow-node">Better Discretization<br />Richer recurrence</div>
+            <div class="flow-node">Complex State<br />Data-dependent rotation</div>
+            <div class="flow-node">MIMO Update<br />Higher arithmetic intensity</div>
+            <div class="flow-node">Norm + Biases<br />Stable efficient architecture</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="results" class="panel">
+      <div class="section-head">
+        <h2>4. Key Results</h2>
+        <div class="section-note">Experimental setup, quantitative highlights, and what the evidence actually shows.</div>
+      </div>
+      <div class="lang-grid">
+        <article class="lang-card en">
+          <span class="lang-label">English</span>
+          <p>
+            The core language-modeling comparison pretrains all models on 100B FineWeb-Edu tokens with a 2K context and the Llama-3.1 tokenizer, then evaluates across
+            standard language understanding benchmarks. This matters because it keeps the comparison relatively controlled: Mamba-3 is not being rescued by a more generous
+            training budget. At 1.5B, average accuracy improves from 55.7 for Mamba-2 and 55.8 for GDN to 56.4 for Mamba-3 SISO and 57.6 for Mamba-3 MIMO.
+          </p>
+          <p>
+            The retrieval results are more nuanced, and the paper is strongest when read with that nuance preserved. Pure Mamba-3 models remain weaker than Transformers on some
+            semi-structured retrieval tasks such as SWDE and FDA, which is consistent with the fixed-state limitations of linear models. Yet on synthetic needle-in-a-haystack
+            tasks, Mamba-3 shows markedly better out-of-distribution behavior than Mamba-2, and hybrid models built from Mamba-3 become highly competitive.
+          </p>
+          <p>
+            The state-tracking results are the clearest capability demonstration. Table 3 shows Mamba-3 at 100.00 on parity, 98.51 on modular arithmetic without brackets, and
+            87.75 on modular arithmetic with brackets. Those numbers sharply separate it from Mamba-2, Mamba-3 without RoPE, and Mamba-3 with standard RoPE. Finally, the kernel
+            benchmarks show that the performance gains do not come from ignoring deployment constraints: Mamba-3 SISO is actually faster than reference Mamba-2 at BF16 dstate=128,
+            and MIMO remains close in latency while being stronger.
+          </p>
+        </article>
+        <article class="lang-card zh">
+          <span class="lang-label">简体中文</span>
+          <p>
+            论文的核心语言建模比较基于一个相对受控的实验设置：所有模型都在 100B FineWeb-Edu token 上、2K 上下文长度、Llama-3.1 tokenizer 条件下预训练，
+            然后在一系列标准语言理解基准上评估。这个设置的重要性在于，Mamba-3 的优势并不是来自更宽松的训练预算。在 1.5B 规模上，平均准确率从 Mamba-2 的 55.7、
+            GDN 的 55.8，提升到 Mamba-3 SISO 的 56.4，以及 Mamba-3 MIMO 的 57.6。
+          </p>
+          <p>
+            检索实验则更值得辩证地看待。纯 Mamba-3 模型在 SWDE、FDA 这类半结构化或非结构化信息提取任务上仍弱于 Transformer，这与线性模型固定状态大小的限制是一致的。
+            但在 needle-in-a-haystack 合成检索任务上，Mamba-3 相对 Mamba-2 展现出明显更强的分布外能力；而当它被放入 hybrid 结构后，整体检索表现就变得相当有竞争力。
+          </p>
+          <p>
+            状态跟踪结果是最清楚的能力证明。Table 3 显示，Mamba-3 在 parity 上达到 100.00，在无括号模算术上达到 98.51，在带括号模算术上达到 87.75。
+            这些数字与 Mamba-2、去掉 RoPE 的 Mamba-3，以及使用标准 RoPE 的 Mamba-3 拉开了非常明显的差距。最后，内核基准说明这些增益并不是靠忽视部署现实换来的：
+            在 BF16、dstate=128 条件下，Mamba-3 SISO 比参考 Mamba-2 还更快，而 MIMO 在延迟上仍然十分接近，却拥有更好的性能。
+          </p>
+        </article>
+      </div>
+
+      <div class="chart-grid">
+        <figure class="chart">
+          <h4>1.5B Average Downstream Accuracy</h4>
+          <svg viewBox="0 0 520 260" role="img" aria-label="Average downstream accuracy comparison at 1.5B">
+            <rect x="0" y="0" width="520" height="260" rx="14" fill="#091621"></rect>
+            <text x="36" y="36" fill="#9fb8cb" font-size="12">Average score</text>
+            <line x1="70" y1="210" x2="470" y2="210" stroke="rgba(255,255,255,0.18)"></line>
+            <rect x="86" y="92" width="54" height="118" rx="10" fill="#58738a"></rect>
+            <rect x="176" y="91" width="54" height="119" rx="10" fill="#68849b"></rect>
+            <rect x="266" y="93" width="54" height="117" rx="10" fill="#7e97ab"></rect>
+            <rect x="356" y="79" width="54" height="131" rx="10" fill="#58d3ff"></rect>
+            <rect x="446" y="56" width="54" height="154" rx="10" fill="#8ef0bf"></rect>
+            <text x="88" y="225" fill="#dce8f3" font-size="12">Trans.</text>
+            <text x="184" y="225" fill="#dce8f3" font-size="12">GDN</text>
+            <text x="262" y="225" fill="#dce8f3" font-size="12">M-2</text>
+            <text x="339" y="225" fill="#dce8f3" font-size="12">M-3 SISO</text>
+            <text x="430" y="225" fill="#dce8f3" font-size="12">M-3 MIMO</text>
+            <text x="92" y="86" fill="#dce8f3" font-size="12">55.4</text>
+            <text x="182" y="85" fill="#dce8f3" font-size="12">55.8</text>
+            <text x="272" y="87" fill="#dce8f3" font-size="12">55.7</text>
+            <text x="362" y="73" fill="#dce8f3" font-size="12">56.4</text>
+            <text x="452" y="50" fill="#dce8f3" font-size="12">57.6</text>
+            <text x="338" y="28" fill="#8ef0bf" font-size="12">+1.8 over GDN</text>
+          </svg>
+          <div class="caption">
+            The improvement is modest in absolute points, but meaningful because it is achieved under matched training conditions and with constant-memory recurrent inference.
+          </div>
+        </figure>
+
+        <figure class="chart">
+          <h4>Formal-Language State Tracking</h4>
+          <svg viewBox="0 0 520 260" role="img" aria-label="Formal language task comparison">
+            <rect x="0" y="0" width="520" height="260" rx="14" fill="#091621"></rect>
+            <text x="38" y="34" fill="#9fb8cb" font-size="12">Scaled accuracy (%)</text>
+            <line x1="60" y1="214" x2="476" y2="214" stroke="rgba(255,255,255,0.18)"></line>
+            <text x="60" y="234" fill="#dce8f3" font-size="12">Parity</text>
+            <text x="208" y="234" fill="#dce8f3" font-size="12">Arith. no brackets</text>
+            <text x="374" y="234" fill="#dce8f3" font-size="12">Arith. with brackets</text>
+
+            <rect x="68" y="34" width="18" height="180" rx="6" fill="#8ef0bf"></rect>
+            <rect x="92" y="212" width="18" height="2" rx="2" fill="#ff8f7f"></rect>
+            <rect x="116" y="210" width="18" height="4" rx="2" fill="#58738a"></rect>
+            <rect x="140" y="34" width="18" height="180" rx="6" fill="#58d3ff"></rect>
+
+            <rect x="224" y="37" width="18" height="177" rx="6" fill="#8ef0bf"></rect>
+            <rect x="248" y="176" width="18" height="38" rx="6" fill="#ff8f7f"></rect>
+            <rect x="272" y="128" width="18" height="86" rx="6" fill="#58738a"></rect>
+            <rect x="296" y="35" width="18" height="179" rx="6" fill="#58d3ff"></rect>
+
+            <rect x="380" y="56" width="18" height="158" rx="6" fill="#8ef0bf"></rect>
+            <rect x="404" y="209" width="18" height="5" rx="2" fill="#ff8f7f"></rect>
+            <rect x="428" y="212" width="18" height="2" rx="2" fill="#58738a"></rect>
+            <rect x="452" y="46" width="18" height="168" rx="6" fill="#58d3ff"></rect>
+
+            <text x="54" y="20" fill="#8ef0bf" font-size="11">Mamba-3</text>
+            <text x="130" y="20" fill="#58d3ff" font-size="11">GDN</text>
+            <text x="88" y="20" fill="#ff8f7f" font-size="11">M-3 w/o RoPE</text>
+            <text x="222" y="20" fill="#58738a" font-size="11">Mamba-2</text>
+          </svg>
+          <div class="caption">
+            This chart captures the paper’s strongest capability argument: the complex state update is not a cosmetic change; it dramatically alters what the recurrent model can reliably track.
+          </div>
+        </figure>
+
+        <figure class="chart">
+          <h4>Kernel Latency at BF16</h4>
+          <svg viewBox="0 0 520 240" role="img" aria-label="Kernel latency comparison">
+            <rect x="0" y="0" width="520" height="240" rx="14" fill="#091621"></rect>
+            <text x="36" y="34" fill="#9fb8cb" font-size="12">Lower is better (milliseconds)</text>
+            <rect x="52" y="58" width="278" height="24" rx="9" fill="#7b93a8"></rect>
+            <rect x="52" y="95" width="352" height="24" rx="9" fill="#8a7e8f"></rect>
+            <rect x="52" y="132" width="209" height="24" rx="9" fill="#58d3ff"></rect>
+            <rect x="52" y="169" width="255" height="24" rx="9" fill="#8ef0bf"></rect>
+            <text x="52" y="53" fill="#dce8f3" font-size="12">Mamba-2 dstate=128: 0.203</text>
+            <text x="52" y="90" fill="#dce8f3" font-size="12">GDN dstate=128: 0.257</text>
+            <text x="52" y="127" fill="#dce8f3" font-size="12">Mamba-3 SISO dstate=128: 0.152</text>
+            <text x="52" y="164" fill="#dce8f3" font-size="12">Mamba-3 MIMO dstate=128: 0.185</text>
+          </svg>
+          <div class="caption">
+            The latency story is important because it shows that Mamba-3’s quality gains are not bought by surrendering the deployment advantage of recurrent models.
+          </div>
+        </figure>
+
+        <figure class="chart">
+          <h4>Retrieval Result Pattern</h4>
+          <svg viewBox="0 0 520 240" role="img" aria-label="Retrieval result pattern">
+            <rect x="0" y="0" width="520" height="240" rx="14" fill="#091621"></rect>
+            <text x="34" y="34" fill="#9fb8cb" font-size="12">Qualitative summary of Table 2</text>
+            <rect x="48" y="58" width="130" height="120" rx="14" fill="rgba(255,202,122,0.14)" stroke="rgba(255,202,122,0.3)"></rect>
+            <rect x="194" y="58" width="130" height="120" rx="14" fill="rgba(88,211,255,0.12)" stroke="rgba(88,211,255,0.3)"></rect>
+            <rect x="340" y="58" width="130" height="120" rx="14" fill="rgba(142,240,191,0.12)" stroke="rgba(142,240,191,0.3)"></rect>
+            <text x="68" y="88" fill="#f6e6c5" font-size="14">Weakness</text>
+            <text x="68" y="110" fill="#dce8f3" font-size="12">SWDE / FDA</text>
+            <text x="68" y="130" fill="#dce8f3" font-size="12">Semi-structured</text>
+            <text x="68" y="148" fill="#dce8f3" font-size="12">information extraction</text>
+            <text x="214" y="88" fill="#9fe3ff" font-size="14">Strength</text>
+            <text x="214" y="110" fill="#dce8f3" font-size="12">TQA / SQuAD /</text>
+            <text x="214" y="128" fill="#dce8f3" font-size="12">associative recall</text>
+            <text x="360" y="88" fill="#8ef0bf" font-size="14">OOD Gain</text>
+            <text x="360" y="110" fill="#dce8f3" font-size="12">NIAH length</text>
+            <text x="360" y="128" fill="#dce8f3" font-size="12">generalization better</text>
+            <text x="360" y="146" fill="#dce8f3" font-size="12">than Mamba-2</text>
+          </svg>
+          <div class="caption">
+            The retrieval evidence is mixed rather than uniformly positive, which should temper overgeneralized claims about fixed-state models replacing attention everywhere.
+          </div>
+        </figure>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Experimental slice</th>
+            <th>Reported result</th>
+            <th>Interpretation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Language modeling at 1.5B</td>
+            <td>Mamba-3 SISO reaches 56.4 average score; Mamba-3 MIMO reaches 57.6; GDN is 55.8 and Mamba-2 is 55.7.</td>
+            <td>The proposed changes improve quality under matched pretraining conditions, so the paper’s gains are not easily dismissed as budget effects.</td>
+          </tr>
+          <tr>
+            <td>Retrieval tasks</td>
+            <td>Mamba-3 remains weak on SWDE and FDA, but improves substantially over Mamba-2 on NIAH out-of-distribution settings and becomes strong in hybrid form.</td>
+            <td>The paper is strongest when interpreted as improving recurrent models, not abolishing the tradeoffs of fixed-size state.</td>
+          </tr>
+          <tr>
+            <td>Formal languages</td>
+            <td>Mamba-3 scores 100.00 on parity, 98.51 on modular arithmetic without brackets, and 87.75 with brackets.</td>
+            <td>The complex state update yields a capability jump that simpler Mamba variants do not share.</td>
+          </tr>
+          <tr>
+            <td>State-size Pareto frontier</td>
+            <td>Mamba-3 with 2x smaller state can outperform Mamba-2 at the same quality point; the paper highlights 64-state MIMO versus 128-state Mamba-2.</td>
+            <td>The design does not merely improve accuracy; it changes the quality-versus-latency tradeoff.</td>
+          </tr>
+          <tr>
+            <td>Kernel latency</td>
+            <td>At BF16, dstate=128: Mamba-2 is 0.203 ms, Mamba-3 SISO is 0.152 ms, and Mamba-3 MIMO is 0.185 ms.</td>
+            <td>The additional modeling machinery remains deployment-credible because it does not erase recurrent decoding’s latency advantage.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="conclusion" class="panel">
+      <div class="section-head">
+        <h2>5. Conclusion</h2>
+        <div class="section-note">Main findings and broader implications for future sub-quadratic model design.</div>
+      </div>
+      <div class="lang-grid">
+        <article class="lang-card en">
+          <span class="lang-label">English</span>
+          <p>
+            The paper’s central finding is that recurrent sequence models can be made simultaneously more expressive and more deployment-relevant when the design is derived from
+            state space principles rather than from isolated heuristic patches. Mamba-3 improves language modeling, demonstrates strong state tracking, and retains practical decode
+            efficiency through optimized kernels. That combination is what elevates the work beyond a routine architecture refresh.
+          </p>
+          <p>
+            The broader implication is that the future of efficient language modeling may depend less on abandoning recurrence and more on understanding which parts of recurrence were
+            historically under-designed. Mamba-3 suggests that discretization quality, rotational state structure, and hardware-aware arithmetic intensity are all underexploited levers.
+            Even if hybrid architectures remain necessary for retrieval-heavy tasks, the recurrent component now looks considerably more competitive.
+          </p>
+        </article>
+        <article class="lang-card zh">
+          <span class="lang-label">简体中文</span>
+          <p>
+            论文最核心的结论是：只要设计真正建立在状态空间原理之上，而不是在旧架构上不断打补丁，递归序列模型就可以同时变得更有表达力、也更适合实际部署。
+            Mamba-3 在语言建模上取得了改进，在状态跟踪任务上展现出强能力，并通过优化内核保留了实用的解码效率。正是这种组合，让这篇工作超越了普通的架构迭代。
+          </p>
+          <p>
+            更广义地看，这篇论文暗示高效语言模型的未来未必在于彻底放弃 recurrence，而更可能在于重新理解过去递归设计中哪些部分被低估或设计不足。
+            Mamba-3 表明，离散化质量、旋转型状态结构以及硬件感知的算术强度，都是过去没有被充分利用的设计杠杆。即便在检索密集型任务上 hybrid 结构仍然重要，
+            递归部分如今也比过去更具竞争力。
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="analysis" class="panel">
+      <div class="section-head">
+        <h2>6. Insights and Critical Analysis</h2>
+        <div class="section-note">Strengths, limitations, and future research implications.</div>
+      </div>
+
+      <div class="critique-grid">
+        <article class="critique-card">
+          <div class="pill good">Strength / 优势</div>
+          <p>
+            The paper’s biggest strength is conceptual coherence. The three main methods are not arbitrary independent knobs; they all emerge from the same SSM-centric view and target
+            different failure modes of prior linear models: discretization error, weak state dynamics, and poor decode arithmetic intensity. That coherence makes the empirical results easier
+            to trust because the mechanisms and outcomes align.
+          </p>
+          <p>
+            论文最大的优点在于概念上的一致性。三项核心方法并不是彼此孤立的调参项，而是都从同一个 SSM 视角自然推出，分别针对以往线性模型的三个问题：
+            离散化误差、状态动力学不足以及解码算术强度过低。正因为机制和结果之间关系清晰，论文的实验结论也更容易令人信服。
+          </p>
+        </article>
+        <article class="critique-card">
+          <div class="pill bad">Limitation / 局限</div>
+          <p>
+            The retrieval story remains incomplete. The paper is candid that pure Mamba-3 still struggles on some real-world extraction tasks, and this matters because such tasks often
+            resemble the messy, long-context workloads where attention remains attractive. As a result, Mamba-3 should be read as a frontier-advancing recurrent backbone, not yet as a
+            universal replacement for attention.
+          </p>
+          <p>
+            论文在检索问题上的叙事仍不完整。作者坦率承认纯 Mamba-3 在一些真实世界信息抽取任务上仍表现不足，而这些任务恰恰接近注意力模型擅长的“长上下文、结构杂乱”场景。
+            因此，更合理的理解是：Mamba-3 提升了递归骨干网络的上限，但还不能被视为对注意力机制的普适替代。
+          </p>
+        </article>
+        <article class="critique-card">
+          <div class="pill neutral">Future Work / 未来方向</div>
+          <p>
+            A promising next step is to combine Mamba-3 style recurrent layers with selectively placed attention, retrieval modules, or learned memory systems in a way that preserves the
+            favorable decode path. Another important research direction is determining whether the complex-state and MIMO ideas scale as cleanly at much larger model sizes and longer
+            deployment contexts as they do in the paper’s controlled experiments.
+          </p>
+          <p>
+            一个很有前景的后续方向，是把 Mamba-3 式递归层与稀疏注意力、检索模块或学习型记忆系统进行更紧密的组合，同时尽量保持其有利的解码路径。
+            另一条重要研究线，则是检验复值状态和 MIMO 思想在更大模型规模、以及更长真实部署上下文中，是否还能像论文中的受控实验那样稳定奏效。
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="critique" class="panel">
+      <div class="section-head">
+        <h2>7. Critique</h2>
+        <div class="section-note">Three strengths and three weaknesses identified after reading the paper closely.</div>
+      </div>
+
+      <div class="critique-grid">
+        <article class="critique-card">
+          <div class="pill good">Strength 1</div>
+          <p>
+            The paper provides a rare blend of mathematical motivation and systems justification. The numerical-analysis argument for discretization, the representational argument for
+            complex state updates, and the hardware argument for MIMO all point in the same direction.
+          </p>
+        </article>
+        <article class="critique-card">
+          <div class="pill good">Strength 2</div>
+          <p>
+            The formal-language experiments are highly valuable because they test a specific known weakness of linear recurrent models. The results make a stronger case than benchmark
+            averages alone because they reveal a qualitative capability difference.
+          </p>
+        </article>
+        <article class="critique-card">
+          <div class="pill good">Strength 3</div>
+          <p>
+            The paper does not ignore deployment. By reporting kernel latencies and providing optimized implementations, it addresses the usual criticism that architectural gains disappear
+            once real inference kernels are considered.
+          </p>
+        </article>
+        <article class="critique-card">
+          <div class="pill bad">Weakness 1</div>
+          <p>
+            The retrieval evidence still limits the scope of the claims. Fixed-state models remain weaker than attention on some tasks that require robust access to diffuse or irregularly
+            structured context.
+          </p>
+        </article>
+        <article class="critique-card">
+          <div class="pill bad">Weakness 2</div>
+          <p>
+            Some of the paper’s strongest arguments depend on synthetic tasks and proxy plots. Those are informative, but they do not fully substitute for broader long-context and
+            production-style evaluations across more diverse workloads.
+          </p>
+        </article>
+        <article class="critique-card">
+          <div class="pill bad">Weakness 3</div>
+          <p>
+            MIMO improves decode utilization but increases training-side compute, and the paper leaves open how favorable that tradeoff remains at very large scales or under more constrained
+            training budgets.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>Sources</h2>
+        <div class="section-note">Primary references used to ground the report.</div>
+      </div>
+      <div class="sources-grid">
+        <article class="source-card">
+          <div class="pill neutral">Primary Paper</div>
+          <p>
+            Accepted ICLR 2026 version of the paper with the quantitative results used in this report:
+            <a href="https://openreview.net/pdf/302a1e7dbb2a1c68b7f89c4076ab02c06cbd1ac7.pdf">OpenReview PDF</a>.
+          </p>
+        </article>
+        <article class="source-card">
+          <div class="pill neutral">Venue Page</div>
+          <p>
+            OpenReview listing for publication context and accepted-paper metadata:
+            <a href="https://openreview.net/forum?id=HwCvaJOiCj">OpenReview forum page</a>.
+          </p>
+        </article>
+        <article class="source-card">
+          <div class="pill neutral">Report Scope</div>
+          <p>
+            This report focuses on the accepted OpenReview text because it exposes the final tables, figures, and methodological framing cleanly. Analytical judgments in the report are
+            inferences from those results rather than claims stated by the authors verbatim.
+          </p>
+        </article>
+      </div>
+      <div class="footer">
+        Report generated in standalone HTML for the `reports/` directory. Default view: bilingual side-by-side. Language toggles are client-side only; no external scripts or local assets are required.
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var buttons = document.querySelectorAll(".toggle button");
+      buttons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          var view = button.getAttribute("data-view");
+          document.body.setAttribute("data-view", view);
+          buttons.forEach(function (item) {
+            item.classList.toggle("active", item === button);
+          });
+        });
+      });
+    }());
+  </script>
+</body>
+</html>
